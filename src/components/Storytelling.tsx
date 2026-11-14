@@ -3,51 +3,41 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Sparkles, Check, ChevronRight } from 'lucide-react';
-import { Language } from '../types';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface StorytellingProps {
-  lang: Language;
+  lang?: string;
 }
 
-export const Storytelling: React.FC<StorytellingProps> = ({ lang }) => {
+export const Storytelling: React.FC<StorytellingProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeStep, setActiveStep] = useState(0);
 
   const steps = [
     {
       num: '01',
-      tag: lang === 'en' ? 'Understand' : 'Entender',
-      title: lang === 'en' ? 'Before the scissors, a conversation.' : 'Antes da tesoura, uma conversa.',
-      text:
-        lang === 'en'
-          ? 'Your lifestyle, face geometry, and natural hair texture guide the tailored blueprint before cutting.'
-          : 'Seu estilo, sua rotina e a textura do seu cabelo orientam o corte antes da primeira tesourada.',
+      tag: 'Understand',
+      title: 'Before the shears, an intentional conversation.',
+      text: 'Your lifestyle, face geometry, and natural growth patterns guide the tailored blueprint before cutting.',
       image: '/assets/cutouts/fade-cutout.png',
-      detail: lang === 'en' ? 'Facial Anatomy Analysis' : 'Análise da estrutura facial',
+      detail: 'Facial Anatomy & Texture Analysis',
     },
     {
       num: '02',
-      tag: lang === 'en' ? 'Execute' : 'Executar',
-      title: lang === 'en' ? 'Precision in every pass.' : 'Precisão em cada passagem.',
-      text:
-        lang === 'en'
-          ? 'Sculpting clean tapers, scissor transitions, and weight balance with steady razor craftsmanship.'
-          : 'Forma, proporção e acabamento tratados com atenção milimétrica e tesoura afiada.',
+      tag: 'Execute',
+      title: 'Millimeter precision in every pass.',
+      text: 'Sculpting seamless gradients, scissor weight dissipation, and clean classic transitions with steady razor craftsmanship.',
       image: '/assets/cutouts/scissor-craft-cutout.png',
-      detail: lang === 'en' ? 'Seamless Gradient Fades' : 'Degradês e transições limpas',
+      detail: 'Seamless Taper & Scissor Architecture',
     },
     {
       num: '03',
-      tag: lang === 'en' ? 'Refine' : 'Finalizar',
-      title: lang === 'en' ? 'The detail elevates the whole.' : 'O detalhe muda o conjunto.',
-      text:
-        lang === 'en'
-          ? 'Steamed hot towel relaxation, straight razor neck cleanup, and clear advice to maintain the look at home.'
-          : 'Finalização cuidadosa com toalha quente, navalha e orientações para manter o visual no dia a dia.',
+      tag: 'Refine',
+      title: 'The hot towel detail elevates the whole.',
+      text: 'Steamed herbal towel relaxation, straight razor perimeter cleanup, and styling guidance to maintain the silhouette.',
       image: '/assets/cutouts/hot-towel-cutout.png',
-      detail: lang === 'en' ? 'Signature Hot Towel Finish' : 'Ritual de toalha quente',
+      detail: 'Herbal Steam & Straight Razor Polish',
     },
   ];
 
@@ -105,29 +95,19 @@ export const Storytelling: React.FC<StorytellingProps> = ({ lang }) => {
   );
 
   return (
-    <section id="experiencia" ref={containerRef} className="section-y relative bg-card/40 border-t border-border">
+    <section id="craft" ref={containerRef} className="section-y relative bg-[#0E0D0B] border-t border-border">
       <div className="container-x">
         {/* Section Header with Pill Word */}
         <div className="story-header max-w-3xl mb-16">
           <div className="eyebrow mb-4">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span>{lang === 'en' ? 'The Ritual & Story' : 'O Cuidado nos Detalhes'}</span>
+            <span>The Aura Methodology</span>
           </div>
           <h2 className="display text-4xl sm:text-5xl md:text-6xl text-foreground uppercase tracking-tight mb-5">
-            {lang === 'en' ? (
-              <>
-                THE CRAFT IS IN THE <span className="pill-word">DETAILS.</span>
-              </>
-            ) : (
-              <>
-                O CUIDADO ESTÁ NOS <span className="pill-word">DETALHES.</span>
-              </>
-            )}
+            THE CRAFT IS IN THE <span className="pill-word">DETAILS.</span>
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            {lang === 'en'
-              ? 'Three deliberate chapters designed to respect your time, listen to your desires, and leave you feeling revitalized.'
-              : 'Três etapas visuais pensadas para valorizar o seu tempo, alinhar a ideia e entregar um resultado que permanece impecável.'}
+            Three deliberate chapters designed to respect your schedule, listen to your desires, and leave you feeling sharp and revitalized.
           </p>
         </div>
 
@@ -168,9 +148,9 @@ export const Storytelling: React.FC<StorytellingProps> = ({ lang }) => {
               className="story-step-card flex flex-col rounded-3xl border border-border bg-card overflow-hidden group hover:border-primary/60 transition-all duration-500 shadow-xl"
             >
               {/* Step Cutout Stage with Warm Vignette Backplate */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-[#1C1A16] to-[#121110] flex items-center justify-center p-4">
+              <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-[#181614] to-[#100F0D] flex items-center justify-center p-4">
                 {/* Background radial highlight */}
-                <div className="absolute inset-0 bg-radial-gradient from-primary/10 via-transparent to-transparent opacity-80" />
+                <div className="absolute inset-0 bg-radial-gradient from-primary/15 via-transparent to-transparent opacity-80" />
 
                 <img
                   src={step.image}

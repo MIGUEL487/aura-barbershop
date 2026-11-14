@@ -1,20 +1,19 @@
 import React from 'react';
 import { MapPin, Clock, Navigation } from 'lucide-react';
-import { Language } from '../types';
 
 interface LocationAndHoursProps {
-  lang: Language;
+  lang?: string;
   onOpenBooking: () => void;
 }
 
-export const LocationAndHours: React.FC<LocationAndHoursProps> = ({ lang, onOpenBooking }) => {
+export const LocationAndHours: React.FC<LocationAndHoursProps> = ({ onOpenBooking }) => {
   return (
-    <section className="section-y relative bg-card/20 border-t border-border">
+    <section className="section-y relative bg-[#0E0D0C] border-t border-border">
       <div className="container-x">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left: Stylized Map Graphic Card */}
           <div className="lg:col-span-7">
-            <div className="relative rounded-2xl overflow-hidden border border-border bg-[#151412] p-8 sm:p-12 shadow-2xl flex flex-col justify-between min-h-[380px] group">
+            <div className="relative rounded-3xl overflow-hidden border border-border bg-[#151412] p-8 sm:p-12 shadow-2xl flex flex-col justify-between min-h-[380px] group">
               {/* Map grid lines background pattern */}
               <div
                 className="absolute inset-0 opacity-15 pointer-events-none"
@@ -26,24 +25,24 @@ export const LocationAndHours: React.FC<LocationAndHoursProps> = ({ lang, onOpen
 
               {/* Pinheiros Stylized Street Vector Graphics */}
               <svg
-                className="absolute inset-0 w-full h-full opacity-30 stroke-primary/50 pointer-events-none"
+                className="absolute inset-0 w-full h-full opacity-35 stroke-primary/50 pointer-events-none"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M-50,150 Q180,80 320,240 T700,120" fill="none" strokeWidth="2.5" />
                 <path d="M120,-30 L280,450" fill="none" strokeWidth="1.5" strokeDasharray="4 4" />
                 <path d="M300,200 L550,380" fill="none" strokeWidth="2" />
-                <circle cx="320" cy="240" r="8" fill="#E68A2E" className="animate-ping" />
-                <circle cx="320" cy="240" r="6" fill="#E68A2E" />
+                <circle cx="320" cy="240" r="8" fill="#C5A059" className="animate-ping" />
+                <circle cx="320" cy="240" r="6" fill="#C5A059" />
               </svg>
 
               {/* Top tag */}
               <div className="relative z-10 flex items-center justify-between">
                 <div className="demo-tag">
                   <Navigation className="w-3.5 h-3.5 text-primary" />
-                  <span>{lang === 'en' ? 'Demonstration Map' : 'Mapa Conceitual Ilustrativo'}</span>
+                  <span>Atelier Location</span>
                 </div>
                 <span className="text-xs font-mono text-muted-foreground uppercase">
-                  Pinheiros • Zona Oeste
+                  Pinheiros • São Paulo
                 </span>
               </div>
 
@@ -56,9 +55,7 @@ export const LocationAndHours: React.FC<LocationAndHoursProps> = ({ lang, onOpen
                   <div>
                     <h4 className="font-bold text-foreground text-base">Aura Barbershop Studio</h4>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                      {lang === 'en'
-                        ? 'Rua dos Pinheiros (Illustrative Location) • Near Fradique Coutinho Metro'
-                        : 'Rua dos Pinheiros (Localização Ilustrativa) • Próximo ao Metrô Fradique Coutinho'}
+                      Rua dos Pinheiros • 200m from Fradique Coutinho Metro Station
                     </p>
                   </div>
                 </div>
@@ -66,9 +63,7 @@ export const LocationAndHours: React.FC<LocationAndHoursProps> = ({ lang, onOpen
 
               {/* Bottom Note */}
               <div className="relative z-10 text-[11px] text-muted-foreground/80 font-mono">
-                {lang === 'en'
-                  ? 'Fictional studio address created for demonstration purposes.'
-                  : 'Endereço conceitual demonstrativo sem atendimento físico real.'}
+                Pinheiros Sanctuary • Private Reserved Parking Available
               </div>
             </div>
           </div>
@@ -77,50 +72,48 @@ export const LocationAndHours: React.FC<LocationAndHoursProps> = ({ lang, onOpen
           <div className="lg:col-span-5 lg:pl-4">
             <div className="eyebrow mb-4">
               <Clock className="w-4 h-4 text-primary" />
-              <span>{lang === 'en' ? 'Operating Hours' : 'Horários & Funcionamento'}</span>
+              <span>Studio Hours</span>
             </div>
 
             <h2 className="display text-4xl sm:text-5xl text-foreground uppercase tracking-tight mb-6">
-              {lang === 'en' ? 'BY APPOINTMENT ONLY.' : 'ATENDIMENTO COM HORA MARCADA.'}
+              BY APPOINTMENT ONLY.
             </h2>
 
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-8">
-              {lang === 'en'
-                ? 'We operate strictly on reserved calendar slots so every customer receives undivided attention and zero waiting time in the chair.'
-                : 'Trabalhamos exclusivamente com horário reservado para garantir pontualidade e dedicação total durante o seu ritual.'}
+              We operate strictly on reserved calendar slots so every gentleman receives undivided attention, bespoke consultation, and zero waiting room delay.
             </p>
 
             {/* Schedule List */}
             <div className="space-y-3 mb-8">
               <div className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
                 <span className="font-semibold text-foreground text-sm">
-                  {lang === 'en' ? 'Tuesday – Friday' : 'Terça a Sexta-feira'}
+                  Tuesday – Friday
                 </span>
                 <span className="font-mono text-primary text-sm font-bold">10:00 — 20:00</span>
               </div>
 
               <div className="p-4 rounded-xl border border-border bg-card flex items-center justify-between">
                 <span className="font-semibold text-foreground text-sm">
-                  {lang === 'en' ? 'Saturday' : 'Sábado'}
+                  Saturday
                 </span>
                 <span className="font-mono text-primary text-sm font-bold">09:00 — 18:00</span>
               </div>
 
               <div className="p-4 rounded-xl border border-border/50 bg-surface-raised/40 flex items-center justify-between text-muted-foreground">
                 <span className="font-medium text-sm">
-                  {lang === 'en' ? 'Sunday & Monday' : 'Domingo e Segunda-feira'}
+                  Sunday & Monday
                 </span>
                 <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground/60">
-                  {lang === 'en' ? 'Closed' : 'Fechado'}
+                  Closed
                 </span>
               </div>
             </div>
 
             <button
               onClick={onOpenBooking}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#F39A3C] transition-all"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#D4AF6A] glow-gold transition-all"
             >
-              <span>{lang === 'en' ? 'Reserve an Open Slot' : 'Escolher um Horário'}</span>
+              <span>Reserve Dedicated Seat</span>
             </button>
           </div>
         </div>

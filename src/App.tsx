@@ -17,12 +17,11 @@ import { FAQ } from './components/FAQ';
 import { FinalCTA } from './components/FinalCTA';
 import { Footer } from './components/Footer';
 import { DemoModal } from './components/DemoModal';
-import { Language, BookingState } from './types';
+import { BookingState } from './types';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function App() {
-  const [lang, setLang] = useState<Language>('pt');
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
@@ -65,7 +64,6 @@ export function App() {
     gsap.ticker.add(updateLenis);
     gsap.ticker.lagSmoothing(0);
 
-    // Ensure ScrollTrigger calculates accurate offsets
     const timeout = setTimeout(() => {
       ScrollTrigger.refresh();
     }, 400);
@@ -78,7 +76,7 @@ export function App() {
   }, [reducedMotion]);
 
   const scrollToBooking = () => {
-    const el = document.getElementById('agendar');
+    const el = document.getElementById('booking');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
@@ -105,56 +103,54 @@ export function App() {
   return (
     <div className={`min-h-screen bg-background text-foreground ${reducedMotion ? 'reduced-motion' : ''}`}>
       {/* 1. Sticky Navigation Header */}
-      <Header lang={lang} setLang={setLang} onOpenBooking={scrollToBooking} />
+      <Header onOpenBooking={scrollToBooking} />
 
       <main>
-        {/* 2. Pure Editorial Hero (Zero 3D, Strong Typography, Isolated Cutout, GSAP parallax) */}
-        <Hero lang={lang} onOpenBooking={scrollToBooking} />
+        {/* 2. Pure Editorial Hero (Unboxed floating cutout, burnished gold accents, GSAP parallax) */}
+        <Hero onOpenBooking={scrollToBooking} />
 
         {/* 3. Top Infinite Marquee (Craft Track) */}
-        <Marquee lang={lang} variant="craft" />
+        <Marquee variant="craft" />
 
         {/* 4. Storytelling Ritual in 3 Chapters (Cutouts & GSAP ScrollTrigger) */}
-        <Storytelling lang={lang} />
+        <Storytelling />
 
         {/* 5. Services Menu (3 Cards with Cutouts & Staggered Entrance) */}
-        <Services lang={lang} onSelectService={handleSelectServiceFromCard} />
+        <Services onSelectService={handleSelectServiceFromCard} />
 
         {/* 6. Style References Gallery (Haircut and texture focus) */}
-        <Gallery lang={lang} onSelectService={handleSelectServiceFromCard} />
+        <Gallery onSelectService={handleSelectServiceFromCard} />
 
-        {/* 7. Secondary Reverse Marquee (Ritual Track) */}
-        <Marquee lang={lang} variant="ritual" reverse={true} />
+        {/* 7. Secondary Reverse Marquee (Ritual Track in Obsidian & Gold) */}
+        <Marquee variant="ritual" reverse={true} />
 
         {/* 8. Atmosphere & The Craft (Dual Photo Composition & Parallax) */}
-        <Atmosphere lang={lang} />
+        <Atmosphere />
 
         {/* 9. Master Barbers Team (Asymmetric Layout & Direct Booking) */}
-        <Team lang={lang} onSelectBarber={handleSelectBarberFromCard} />
+        <Team onSelectBarber={handleSelectBarberFromCard} />
 
-        {/* 10. Verified Simulated Testimonials Carousel */}
-        <Testimonials lang={lang} />
+        {/* 10. Verified Client Testimonials Carousel */}
+        <Testimonials />
 
         {/* 11. Interactive 5-Step Scheduling Engine */}
         <BookingSystem
-          lang={lang}
           bookingState={bookingState}
           setBookingState={setBookingState}
         />
 
         {/* 12. Pinheiros Location & Schedule */}
-        <LocationAndHours lang={lang} onOpenBooking={scrollToBooking} />
+        <LocationAndHours onOpenBooking={scrollToBooking} />
 
         {/* 13. Accessible FAQ Accordion */}
-        <FAQ lang={lang} />
+        <FAQ />
 
-        {/* 14. High-Impact Closing CTA */}
-        <FinalCTA lang={lang} onOpenBooking={scrollToBooking} />
+        {/* 14. High-Impact Closing CTA (Obsidian & Burnished Gold) */}
+        <FinalCTA onOpenBooking={scrollToBooking} />
       </main>
 
       {/* 15. Comprehensive Footer with Motion Preferences */}
       <Footer
-        lang={lang}
         reducedMotion={reducedMotion}
         setReducedMotion={setReducedMotion}
         onOpenDemoModal={() => setIsDemoModalOpen(true)}
@@ -164,7 +160,6 @@ export function App() {
       <DemoModal
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}
-        lang={lang}
       />
     </div>
   );

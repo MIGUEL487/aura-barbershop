@@ -1,28 +1,26 @@
 import React, { useRef } from 'react';
-import { Calendar, ArrowRight, Clock, Award, ShieldCheck, Sparkles } from 'lucide-react';
+import { Calendar, ArrowRight, Sparkles, Scissors, CheckCircle2 } from 'lucide-react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Language } from '../types';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface HeroProps {
-  lang: Language;
   onOpenBooking: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
+export const Hero: React.FC<HeroProps> = ({ onOpenBooking }) => {
   const heroRef = useRef<HTMLDivElement>(null);
   const cutoutContainerRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+  const circleRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReducedMotion) return;
 
-      // Entrance animation
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
       tl.fromTo(
@@ -32,7 +30,7 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
       )
         .fromTo(
           '.hero-title-line',
-          { y: 40, opacity: 0 },
+          { y: 45, opacity: 0 },
           { y: 0, opacity: 1, stagger: 0.12, duration: 0.8 },
           '-=0.3'
         )
@@ -49,19 +47,25 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
           '-=0.4'
         )
         .fromTo(
-          '.hero-badge-item',
+          '.hero-stat-item',
           { y: 15, opacity: 0 },
           { y: 0, opacity: 1, stagger: 0.08, duration: 0.5 },
           '-=0.3'
         )
         .fromTo(
           cutoutContainerRef.current,
-          { scale: 0.94, y: 30, opacity: 0 },
-          { scale: 1, y: 0, opacity: 1, duration: 1.0, ease: 'expo.out' },
-          '-=0.8'
+          { scale: 0.92, y: 30, opacity: 0 },
+          { scale: 1, y: 0, opacity: 1, duration: 1.1, ease: 'power2.out' },
+          '-=0.9'
+        )
+        .fromTo(
+          '.floating-chip',
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, stagger: 0.15, duration: 0.6 },
+          '-=0.4'
         );
 
-      // Subtle scroll parallax
+      // Subtle scroll parallax for the cutout and glowing halo
       if (cutoutContainerRef.current) {
         gsap.to(cutoutContainerRef.current, {
           scrollTrigger: {
@@ -70,8 +74,21 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
             end: 'bottom top',
             scrub: 1.2,
           },
-          y: 60,
-          scale: 0.97,
+          y: 50,
+          scale: 0.98,
+          ease: 'none',
+        });
+      }
+
+      if (circleRef.current) {
+        gsap.to(circleRef.current, {
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1.5,
+          },
+          rotate: 45,
           ease: 'none',
         });
       }
@@ -82,10 +99,10 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
             trigger: heroRef.current,
             start: 'top top',
             end: 'bottom top',
-            scrub: 1.5,
+            scrub: 1.8,
           },
-          scale: 1.25,
-          opacity: 0.4,
+          scale: 1.2,
+          opacity: 0.35,
           ease: 'none',
         });
       }
@@ -97,138 +114,168 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
     <section
       id="top"
       ref={heroRef}
-      className="relative overflow-hidden pt-8 pb-16 md:pt-16 md:pb-28 lg:pt-20 lg:pb-32 bg-noise"
+      className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 lg:pt-16 lg:pb-28 bg-noise"
     >
       {/* Dynamic warm radial glow */}
       <div
         ref={glowRef}
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[550px] bg-primary/15 rounded-full blur-[150px] pointer-events-none"
+        className="absolute top-1/2 left-3/4 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-primary/12 rounded-full blur-[150px] pointer-events-none -z-10"
       />
+      <div className="absolute top-1/4 left-10 w-[350px] h-[350px] bg-primary/5 rounded-full blur-[120px] pointer-events-none -z-10" />
+
+      {/* Subtle architectural horizontal guide line */}
+      <div className="absolute top-0 inset-x-0 hairline opacity-60" />
+      <div className="absolute bottom-0 inset-x-0 hairline opacity-60" />
 
       <div className="container-x relative">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+        {/* Subtle top metadata ticker line */}
+        <div className="hidden md:flex items-center justify-between text-[11px] font-mono tracking-widest text-muted-foreground/60 uppercase pb-6 border-b border-border/40 mb-8">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <span>PINHEIROS ATELIER • EST. 2026</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <span>BY APPOINTMENT ONLY</span>
+            <span className="text-border">•</span>
+            <span>TUE — SAT 10:00 — 20:00</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           {/* Left Column: Typography & CTAs */}
           <div className="lg:col-span-7 z-10">
             {/* Eyebrow Pill */}
-            <div className="hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/30 bg-card/80 backdrop-blur-md mb-6 shadow-sm">
+            <div className="hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/30 bg-[#161411]/90 backdrop-blur-md mb-6 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span className="text-xs font-mono font-bold tracking-wider uppercase text-primary">
-                {lang === 'en' ? 'Aura • Editorial Barbering Studio' : 'Aura • Barbearia em Pinheiros'}
+                Aura • Editorial Barbering Studio
               </span>
             </div>
 
-            {/* Main Editorial Headline with Pill Word */}
-            <h1 className="display text-5xl sm:text-6xl md:text-7xl lg:text-[5.4rem] leading-[0.92] tracking-tight uppercase text-foreground mb-6">
+            {/* Main Editorial Headline with Burnished Gold Pill Word */}
+            <h1 className="display text-5xl sm:text-6xl md:text-7xl lg:text-[5.3rem] leading-[0.92] tracking-tight uppercase text-foreground mb-6">
               <span className="block hero-title-line title-gradient">
-                {lang === 'en' ? 'YOUR STYLE SHARPENED.' : 'SEU ESTILO BEM DEFINIDO.'}
+                YOUR STYLE SHARPENED.
               </span>
               <span className="block hero-title-line mt-1">
-                {lang === 'en' ? (
-                  <>
-                    YOUR TIME <span className="pill-word">HONORED.</span>
-                  </>
-                ) : (
-                  <>
-                    SEU HORÁRIO <span className="pill-word">RESPEITADO.</span>
-                  </>
-                )}
+                YOUR TIME <span className="pill-word">HONORED.</span>
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="hero-desc text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl mb-9 leading-relaxed font-normal">
-              {lang === 'en'
-                ? 'Precision scissor tailoring, straight-razor hot towel sculpting, and absolute calendar punctuality. Choose your service and experience an unhurried chair.'
-                : 'Corte personalizado na tesoura, barba com toalha quente e atenção minuciosa aos detalhes. Escolha seu serviço e encontre o melhor horário para você.'}
+              Precision scissor tailoring, straight-razor hot towel sculpting, and absolute calendar punctuality. Choose your ritual and experience a dedicated, private chair with zero wait time.
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-10">
+            {/* CTAs in Burnished Gold & Architectural Glass */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-11">
               <button
                 onClick={onOpenBooking}
-                className="hero-cta-btn inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-[#FF8526] hover:scale-[1.02] active:scale-[0.98] transition-all glow-amber shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="hero-cta-btn inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-[#D4AF6A] hover:scale-[1.02] active:scale-[0.98] transition-all glow-gold shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Calendar className="w-5 h-5" />
-                <span>{lang === 'en' ? 'Book an Appointment' : 'Agendar Meu Horário'}</span>
+                <span>Book Appointment</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
               <a
-                href="#servicos"
-                className="hero-cta-btn inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-border hover:border-primary/80 bg-surface-raised/40 hover:bg-surface-raised text-foreground font-semibold text-base transition-all active:scale-[0.98] group"
+                href="#services"
+                className="hero-cta-btn inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-border hover:border-primary/70 bg-surface-raised/60 hover:bg-surface-raised text-foreground font-semibold text-base transition-all active:scale-[0.98] group"
               >
-                <span>{lang === 'en' ? 'Explore Services' : 'Conhecer os Serviços'}</span>
+                <span>Explore Services</span>
                 <span className="text-primary group-hover:translate-x-1 transition-transform">→</span>
               </a>
             </div>
 
-            {/* Trust Badges */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border/60 max-w-lg text-xs sm:text-sm text-muted-foreground">
-              <div className="hero-badge-item flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary shrink-0" />
-                <span>{lang === 'en' ? 'Zero Wait Time' : 'Sem Fila de Espera'}</span>
+            {/* Value Verification Row */}
+            <div className="grid grid-cols-3 gap-6 pt-7 border-t border-border/60 max-w-xl">
+              <div className="hero-stat-item">
+                <div className="flex items-center gap-1.5 text-foreground font-mono text-xl sm:text-2xl font-bold">
+                  <span className="text-primary">0</span>
+                  <span className="text-xs uppercase text-muted-foreground font-normal">Min</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">Zero Wait Time Policy</p>
               </div>
-              <div className="hero-badge-item flex items-center gap-2">
-                <Award className="w-4 h-4 text-primary shrink-0" />
-                <span>{lang === 'en' ? 'Master Barbers' : 'Barbeiros Mestres'}</span>
+
+              <div className="hero-stat-item border-l border-border/50 pl-6">
+                <div className="flex items-center gap-1.5 text-foreground font-mono text-xl sm:text-2xl font-bold">
+                  <span className="text-primary">45</span>
+                  <span className="text-xs uppercase text-muted-foreground font-normal">Min</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">Dedicated Chair Session</p>
               </div>
-              <div className="hero-badge-item flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-                <span>{lang === 'en' ? 'Simulated Demo' : 'Demo Verificada'}</span>
+
+              <div className="hero-stat-item border-l border-border/50 pl-6">
+                <div className="flex items-center gap-1.5 text-foreground font-mono text-xl sm:text-2xl font-bold">
+                  <span className="text-primary">12+</span>
+                  <span className="text-xs uppercase text-muted-foreground font-normal">Yrs</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">Master Barber Craft</p>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Hero Visual Cutout Composition */}
-          <div className="lg:col-span-5 relative flex items-center justify-center">
-            {/* Cutout Container with ambient backlight */}
+          {/* Right Column: Unboxed Organic Cutout Composition */}
+          <div className="lg:col-span-5 relative flex items-center justify-center min-h-[460px] sm:min-h-[540px] lg:min-h-[620px]">
+            {/* Background Subtle Architectural Ring (Not a box!) */}
+            <div
+              ref={circleRef}
+              className="absolute w-[440px] h-[440px] sm:w-[500px] sm:h-[500px] lg:w-[540px] lg:h-[540px] rounded-full border border-primary/20 pointer-events-none -z-10 flex items-center justify-center opacity-70"
+            >
+              <div className="w-[88%] h-[88%] rounded-full border border-dashed border-border/60" />
+            </div>
+
+            {/* Ambient Radial Depth Glow centered behind cutout */}
+            <div className="absolute w-[360px] sm:w-[420px] h-[360px] sm:h-[420px] bg-gradient-to-tr from-primary/25 via-primary/10 to-transparent rounded-full blur-[100px] pointer-events-none -z-10" />
+
+            {/* Unboxed Cutout Figure Container */}
             <div
               ref={cutoutContainerRef}
-              className="relative w-full max-w-[460px] lg:max-w-none flex flex-col items-center"
+              className="relative w-full flex flex-col items-center justify-end z-10"
             >
-              {/* Backlight halo behind cutout */}
-              <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-primary/5 to-transparent rounded-3xl blur-2xl -z-10" />
+              {/* Floating Top Pill Chip */}
+              <div className="floating-chip absolute top-2 right-4 z-20 px-3.5 py-1.5 rounded-full bg-[#171513]/90 backdrop-blur-md border border-primary/30 flex items-center gap-2 shadow-xl">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-foreground">
+                  Master Scissor Craft
+                </span>
+              </div>
 
-              {/* Architectural Arch Backplate */}
-              <div className="relative w-full aspect-[4/5] rounded-3xl border border-border/80 bg-gradient-to-b from-[#181614] via-[#121110] to-[#0E0D0C] overflow-hidden p-6 flex flex-col justify-between shadow-2xl">
-                {/* Subtle ornamental corner markers */}
-                <div className="flex justify-between items-center text-[10px] font-mono text-muted-foreground/60 uppercase tracking-widest">
-                  <span>✦ AURA CRAFT</span>
-                  <span>EST. 2026</span>
-                </div>
+              {/* The Hero Cutout Image: Unboxed, organic, breathing naturally */}
+              <div className="relative w-full flex items-end justify-center">
+                <img
+                  src="/assets/cutouts/hero-barber-cutout.png"
+                  alt="Master barber meticulously detailing client with precision scissors in open studio"
+                  className="w-auto h-[420px] sm:h-[500px] lg:h-[560px] max-w-full object-contain cutout-shadow transition-transform duration-700 hover:scale-[1.02]"
+                  loading="eager"
+                />
 
-                {/* Floating Barber Cutout Image with rich depth shadow */}
-                <div className="relative my-auto flex items-center justify-center">
-                  <img
-                    src="/assets/cutouts/hero-barber-cutout.png"
-                    alt={
-                      lang === 'en'
-                        ? 'Master barber meticulously styling client with scissors'
-                        : 'Barbeiro mestre executando corte clássico com tesoura'
-                    }
-                    className="w-full max-h-[380px] sm:max-h-[440px] object-contain cutout-shadow transition-transform duration-700 hover:scale-105"
-                    loading="eager"
-                  />
-                </div>
+                {/* Ground depth shadow under cutout */}
+                <div className="absolute -bottom-4 w-3/4 h-8 bg-black/80 blur-xl rounded-full -z-10" />
+              </div>
 
-                {/* Bottom Floating Pill Card */}
-                <div className="relative z-10 p-3.5 rounded-xl bg-card/90 backdrop-blur-md border border-border flex items-center justify-between gap-3 shadow-xl">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center text-primary">
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase font-mono tracking-widest text-primary font-bold">
-                        {lang === 'en' ? 'Master Barbering' : 'Corte & Navalha'}
-                      </p>
-                      <p className="text-xs font-semibold text-foreground">
-                        {lang === 'en' ? 'Custom Tailored Session' : 'Atendimento com Hora Marcada'}
-                      </p>
-                    </div>
+              {/* Floating Translucent Glass Feature Badge */}
+              <div className="floating-chip relative mt-2 z-20 w-full max-w-[380px] p-3 rounded-2xl bg-[#151412]/85 backdrop-blur-xl border border-primary/25 shadow-2xl flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary shrink-0">
+                    <Scissors className="w-4 h-4" />
                   </div>
-                  <span className="text-xs font-mono font-bold text-muted-foreground px-2 py-1 rounded bg-surface-raised border border-border">
-                    45 min
-                  </span>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
+                        Bespoke Consultation
+                      </span>
+                      <CheckCircle2 className="w-3 h-3 text-primary" />
+                    </div>
+                    <p className="text-xs font-semibold text-foreground">
+                      45-Minute Unrushed Chair
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right pl-2 border-l border-border/50">
+                  <span className="text-xs font-mono font-bold text-primary">✦ 4.98</span>
+                  <p className="text-[9px] uppercase tracking-wider text-muted-foreground">850+ Cuts</p>
                 </div>
               </div>
             </div>

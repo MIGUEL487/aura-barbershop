@@ -1,20 +1,19 @@
 import React from 'react';
 import { X, ShieldCheck, Sparkles, AlertTriangle, Database } from 'lucide-react';
-import { Language } from '../types';
 
 interface DemoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  lang: Language;
+  lang?: string;
 }
 
-export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose, lang }) => {
+export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-xl bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-xl bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
         role="dialog"
         aria-modal="true"
         aria-labelledby="demo-modal-title"
@@ -33,14 +32,12 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose, lang }) =
             <ShieldCheck className="w-6 h-6" />
           </div>
           <h3 id="demo-modal-title" className="display text-2xl text-foreground uppercase tracking-tight">
-            {lang === 'en' ? 'About This Demonstration' : 'Sobre Esta Demonstração'}
+            Prototype Transparency Statement
           </h3>
         </div>
 
-        <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-          {lang === 'en'
-            ? 'Aura Barbershop is an editorial demonstration template built to showcase precision front-end design, GSAP ScrollTrigger motion, smooth Lenis scrolling, and Three.js 3D craft details.'
-            : 'Aura Barbershop é um projeto demonstrativo de alta fidelidade visual criado para apresentar design editorial premium, motion fluido com GSAP, Lenis e elemento 3D sutil com Three.js.'}
+        <p className="text-sm text-muted-foreground leading-relaxed mb-6 font-normal">
+          Aura Barbershop is an editorial front-end prototype crafted to demonstrate precision UI/UX layout, GSAP ScrollTrigger motion orchestration, Lenis smooth scrolling, and bespoke cutout composition.
         </p>
 
         <div className="space-y-4 text-xs sm:text-sm text-muted-foreground divide-y divide-border/60 mb-6">
@@ -48,12 +45,10 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose, lang }) =
             <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <div>
               <strong className="text-foreground block">
-                {lang === 'en' ? 'Illustrative AI Photography' : 'Fotografias Ilustrativas por IA'}
+                Editorial AI Visual Assets
               </strong>
               <span>
-                {lang === 'en'
-                  ? 'All barbershop photos, portraits, and process shots are AI-generated demonstration assets from the project kit.'
-                  : 'Todas as imagens de barbeiros, cortes e interiores são materiais ilustrativos gerados por IA inclusos no kit.'}
+                All imagery, master barber portraits, cutouts, and interior atmosphere captures were created as high-fidelity demonstration media for this project kit.
               </span>
             </div>
           </div>
@@ -62,12 +57,10 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose, lang }) =
             <AlertTriangle className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <div>
               <strong className="text-foreground block">
-                {lang === 'en' ? 'Simulated Calendar & Zero Charges' : 'Agendamento Simulado e Sem Cobrança'}
+                Simulated Calendar & Zero Charges
               </strong>
               <span>
-                {lang === 'en'
-                  ? 'No real database appointments or financial transactions take place. Your input is stored only in client memory.'
-                  : 'Nenhuma reserva real ou cobrança de cartão é realizada. Os dados informados existem apenas na sessão atual do navegador.'}
+                No live payment gateway is invoked, and no private data is collected or harvested. All time slots and reservation states exist purely in client session memory.
               </span>
             </div>
           </div>
@@ -76,12 +69,10 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose, lang }) =
             <Database className="w-4 h-4 text-primary shrink-0 mt-0.5" />
             <div>
               <strong className="text-foreground block">
-                {lang === 'en' ? 'Production Ready Architecture' : 'Arquitetura Pronta para Produção'}
+                Production-Ready Architecture
               </strong>
               <span>
-                {lang === 'en'
-                  ? 'Clean modular TypeScript components prepared for instant backend integration with Supabase, Stripe, or WhatsApp notification APIs.'
-                  : 'Código modular em TypeScript preparado para rápida conexão com Supabase, webhooks de WhatsApp e painel administrativo.'}
+                Engineered with modular, type-safe React & Tailwind components prepared for immediate production integration with Supabase, Stripe, or messaging APIs.
               </span>
             </div>
           </div>
@@ -89,9 +80,9 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose, lang }) =
 
         <button
           onClick={onClose}
-          className="w-full py-3 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#F39A3C] transition-all"
+          className="w-full py-3.5 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#D4AF6A] glow-gold transition-all"
         >
-          {lang === 'en' ? 'Understand & Close' : 'Entendido, Fechar Aviso'}
+          Understood, Close Notice
         </button>
       </div>
     </div>

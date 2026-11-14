@@ -4,15 +4,15 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { FAQ_ITEMS } from '../data/barbershopData';
-import { Language, FAQItem } from '../types';
+import { FAQItem } from '../types';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface FAQProps {
-  lang: Language;
+  lang?: string;
 }
 
-export const FAQ: React.FC<FAQProps> = ({ lang }) => {
+export const FAQ: React.FC<FAQProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [openId, setOpenId] = useState<string | null>(FAQ_ITEMS[0].id);
 
@@ -62,23 +62,13 @@ export const FAQ: React.FC<FAQProps> = ({ lang }) => {
           <div className="faq-header lg:col-span-5">
             <div className="eyebrow mb-4">
               <HelpCircle className="w-4 h-4 text-primary" />
-              <span>{lang === 'en' ? 'Common Questions' : 'Dúvidas Frequentes'}</span>
+              <span>Common Questions</span>
             </div>
             <h2 className="display text-4xl sm:text-5xl text-foreground uppercase tracking-tight mb-4">
-              {lang === 'en' ? (
-                <>
-                  EVERY DETAIL <span className="pill-word">CLARIFIED.</span>
-                </>
-              ) : (
-                <>
-                  TUDO SOBRE A <span className="pill-word">EXPERIÊNCIA.</span>
-                </>
-              )}
+              EVERY DETAIL <span className="pill-word">CLARIFIED.</span>
             </h2>
             <p className="text-base text-muted-foreground leading-relaxed">
-              {lang === 'en'
-                ? 'Clear answers regarding our appointment protocol, barber matching, duration, and demonstration status.'
-                : 'Respostas diretas sobre como funciona nosso agendamento, atendimento e regras demonstrativas.'}
+              Clear answers regarding our appointment protocol, master craftsman matching, session duration, and demonstration prototype status.
             </p>
           </div>
 
@@ -103,7 +93,7 @@ export const FAQ: React.FC<FAQProps> = ({ lang }) => {
                     <div className="flex items-center gap-4">
                       <span className="text-xs font-mono font-bold text-primary">0{idx + 1}</span>
                       <h3 className="font-bold text-base sm:text-lg text-foreground">
-                        {lang === 'en' ? item.question : item.questionPt}
+                        {item.question}
                       </h3>
                     </div>
 
@@ -118,7 +108,7 @@ export const FAQ: React.FC<FAQProps> = ({ lang }) => {
 
                   {isOpen && (
                     <div className="px-6 pb-6 pt-1 text-sm sm:text-base text-muted-foreground leading-relaxed border-t border-border/40 animate-in fade-in duration-200">
-                      <p>{lang === 'en' ? item.answer : item.answerPt}</p>
+                      <p>{item.answer}</p>
                     </div>
                   )}
                 </div>

@@ -1,16 +1,14 @@
 import React from 'react';
 import { Scissors, Shield, Play, Pause } from 'lucide-react';
-import { Language } from '../types';
 
 interface FooterProps {
-  lang: Language;
+  lang?: string;
   reducedMotion: boolean;
   setReducedMotion: (val: boolean) => void;
   onOpenDemoModal: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
-  lang,
   reducedMotion,
   setReducedMotion,
   onOpenDemoModal,
@@ -31,9 +29,7 @@ export const Footer: React.FC<FooterProps> = ({
             </a>
 
             <p className="text-xs text-muted-foreground leading-relaxed max-w-sm mb-4">
-              {lang === 'en'
-                ? 'Editorial barbering sanctuary • Pinheiros, São Paulo · Tue–Fri 10h–20h · Sat 9h–18h'
-                : 'Barbearia conceitual • Pinheiros, São Paulo · Ter–Sex 10h–20h · Sáb 9h–18h'}
+              Editorial barbering sanctuary • Pinheiros, São Paulo · Tue–Fri 10:00–20:00 · Sat 09:00–18:00
             </p>
 
             <button
@@ -41,39 +37,39 @@ export const Footer: React.FC<FooterProps> = ({
               className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-semibold"
             >
               <Shield className="w-3.5 h-3.5" />
-              <span>{lang === 'en' ? 'About this demonstration' : 'Sobre esta demonstração'}</span>
+              <span>Prototype Transparency Statement</span>
             </button>
           </div>
 
           {/* Nav Links */}
           <div className="lg:col-span-4">
             <h4 className="text-xs font-mono uppercase tracking-widest text-primary font-bold mb-4">
-              {lang === 'en' ? 'Quick Navigation' : 'Navegação'}
+              Navigation
             </h4>
             <ul className="grid grid-cols-2 gap-2.5 text-sm text-muted-foreground">
               <li>
-                <a href="#experiencia" className="hover:text-primary transition-colors">
-                  {lang === 'en' ? 'Craft Experience' : 'Experiência'}
+                <a href="#craft" className="hover:text-primary transition-colors">
+                  The Craft
                 </a>
               </li>
               <li>
-                <a href="#servicos" className="hover:text-primary transition-colors">
-                  {lang === 'en' ? 'Services' : 'Serviços'}
+                <a href="#services" className="hover:text-primary transition-colors">
+                  Services
                 </a>
               </li>
               <li>
-                <a href="#estilos" className="hover:text-primary transition-colors">
-                  {lang === 'en' ? 'Styles Gallery' : 'Estilos'}
+                <a href="#gallery" className="hover:text-primary transition-colors">
+                  Gallery
                 </a>
               </li>
               <li>
-                <a href="#equipe" className="hover:text-primary transition-colors">
-                  {lang === 'en' ? 'Master Barbers' : 'Equipe'}
+                <a href="#barbers" className="hover:text-primary transition-colors">
+                  Master Barbers
                 </a>
               </li>
               <li>
-                <a href="#agendar" className="hover:text-primary transition-colors font-bold text-foreground">
-                  {lang === 'en' ? 'Book Online' : 'Agendar'}
+                <a href="#booking" className="hover:text-primary transition-colors font-bold text-foreground">
+                  Book Online
                 </a>
               </li>
               <li>
@@ -87,12 +83,10 @@ export const Footer: React.FC<FooterProps> = ({
           {/* Accessibility Motion Controls */}
           <div className="lg:col-span-3">
             <h4 className="text-xs font-mono uppercase tracking-widest text-primary font-bold mb-3">
-              {lang === 'en' ? 'Motion Preference' : 'Preferência de Movimento'}
+              Motion Experience
             </h4>
             <p className="text-xs text-muted-foreground mb-4">
-              {lang === 'en'
-                ? 'Toggle GSAP, smooth scroll, and entrance animations.'
-                : 'Controle de acessibilidade para animações e rolagem.'}
+              Toggle GSAP ScrollTrigger and Lenis smooth scrolling.
             </p>
 
             <div className="inline-flex rounded-xl p-1 bg-surface-raised border border-border">
@@ -105,7 +99,7 @@ export const Footer: React.FC<FooterProps> = ({
                 }`}
               >
                 <Play className="w-3 h-3" />
-                <span>{lang === 'en' ? 'Full Motion' : 'Movimento completo'}</span>
+                <span>Full Motion</span>
               </button>
               <button
                 onClick={() => setReducedMotion(true)}
@@ -116,7 +110,7 @@ export const Footer: React.FC<FooterProps> = ({
                 }`}
               >
                 <Pause className="w-3 h-3" />
-                <span>{lang === 'en' ? 'Reduced' : 'Movimento reduzido'}</span>
+                <span>Reduced</span>
               </button>
             </div>
           </div>
@@ -125,9 +119,7 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Bottom Legal Notice */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>
-            {lang === 'en'
-              ? 'Aura Barbershop is a fictitious editorial brand created for demonstration. Photos and profiles are illustrative. No actual appointments or charges occur.'
-              : 'Aura Barbershop é uma marca fictícia criada para fins demonstrativos. Imagens e personagens são ilustrativos. Nenhuma reserva ou cobrança real é realizada.'}
+            Aura Barbershop is an editorial prototype designed for design & technical demonstration. All portraits and profiles are illustrative. No actual payment or booking is transacted.
           </p>
 
           <span className="font-mono shrink-0">© 2026 Aura Barbershop</span>

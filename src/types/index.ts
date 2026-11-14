@@ -1,25 +1,20 @@
-export type Language = 'en' | 'pt';
-
 export interface Service {
   id: string;
   name: string;
-  namePt: string;
   price: number;
   duration: number; // in minutes
   description: string;
-  descriptionPt: string;
   badge?: string;
-  badgePt?: string;
+  features: string[];
 }
 
 export interface Barber {
   id: string;
   name: string;
   specialty: string;
-  specialtyPt: string;
   bio: string;
-  bioPt: string;
   avatar: string;
+  experience: string;
 }
 
 export interface TimeSlot {
@@ -30,9 +25,7 @@ export interface TimeSlot {
 export interface GalleryItem {
   id: string;
   title: string;
-  titlePt: string;
   category: string;
-  categoryPt: string;
   image: string;
   serviceId: string;
 }
@@ -40,19 +33,15 @@ export interface GalleryItem {
 export interface Testimonial {
   id: string;
   quote: string;
-  quotePt: string;
   author: string;
   role: string;
-  rolePt: string;
   initials: string;
 }
 
 export interface FAQItem {
   id: string;
   question: string;
-  questionPt: string;
   answer: string;
-  answerPt: string;
 }
 
 export interface BookingState {

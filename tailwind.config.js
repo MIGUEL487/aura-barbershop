@@ -7,35 +7,36 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0E0D0C',
+        background: '#0B0A09',
         foreground: '#F5F4F0',
         card: {
-          DEFAULT: '#171513',
+          DEFAULT: '#131210',
           foreground: '#F5F4F0',
         },
         surface: {
-          raised: '#221E1A',
+          raised: '#1A1916',
         },
         primary: {
-          DEFAULT: '#FF6E00',
-          foreground: '#0E0D0C',
-          deep: '#D95800',
+          DEFAULT: '#C5A059',
+          foreground: '#0B0A09',
+          hover: '#D4AF6A',
+          deep: '#967432',
         },
         secondary: {
-          DEFAULT: '#221E1A',
+          DEFAULT: '#1A1916',
           foreground: '#F5F4F0',
         },
         muted: {
-          DEFAULT: '#1F1C18',
-          foreground: '#A8A39B',
+          DEFAULT: '#1E1D19',
+          foreground: '#9E9A90',
         },
         accent: {
-          DEFAULT: '#FF6E00',
-          foreground: '#0E0D0C',
+          DEFAULT: '#C5A059',
+          foreground: '#0B0A09',
         },
-        border: 'rgba(245, 244, 240, 0.12)',
-        input: 'rgba(245, 244, 240, 0.2)',
-        ring: '#FF6E00',
+        border: 'rgba(245, 244, 240, 0.1)',
+        input: 'rgba(245, 244, 240, 0.16)',
+        ring: '#C5A059',
       },
       fontFamily: {
         sans: ['Archivo', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
@@ -49,8 +50,8 @@ export default {
         '3xl': '1.5rem',
       },
       animation: {
-        'marquee': 'marquee 22s linear infinite',
-        'marquee-reverse': 'marquee-reverse 22s linear infinite',
+        'marquee': 'marquee 28s linear infinite',
+        'marquee-reverse': 'marquee-reverse 28s linear infinite',
       },
       keyframes: {
         marquee: {

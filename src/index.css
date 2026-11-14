@@ -4,17 +4,17 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #0E0D0C;
+  --background: #0B0A09;
   --foreground: #F5F4F0;
-  --card: #171513;
+  --card: #131210;
   --card-foreground: #F5F4F0;
-  --surface-raised: #221E1A;
-  --primary: #FF6E00;
-  --primary-foreground: #0E0D0C;
-  --primary-deep: #D95800;
-  --muted: #1F1C18;
-  --muted-foreground: #A8A39B;
-  --border: rgba(245, 244, 240, 0.12);
+  --surface-raised: #1A1916;
+  --primary: #C5A059;
+  --primary-foreground: #0B0A09;
+  --primary-deep: #967432;
+  --muted: #1E1D19;
+  --muted-foreground: #9E9A90;
+  --border: rgba(245, 244, 240, 0.1);
 }
 
 @layer base {
@@ -92,8 +92,8 @@
   }
   @media (min-width: 1024px) {
     .section-y {
-      padding-top: 10rem;
-      padding-bottom: 10rem;
+      padding-top: 9.5rem;
+      padding-bottom: 9.5rem;
     }
   }
 
@@ -111,14 +111,14 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Aesthetic pill words from reference */
+  /* Aesthetic pill words in burnished gold */
   .pill-word {
     display: inline-block;
-    padding: 0.1em 0.35em;
+    padding: 0.08em 0.38em;
     border-radius: 9999px;
-    border: 1.5px solid #FF6E00;
-    color: #FF6E00;
-    box-shadow: 0 0 25px -4px rgba(255, 110, 0, 0.4);
+    border: 1.5px solid #C5A059;
+    color: #C5A059;
+    box-shadow: 0 0 25px -4px rgba(197, 160, 89, 0.35);
     letter-spacing: -0.01em;
     margin: 0 0.08em;
   }
@@ -133,10 +133,10 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    background-color: rgba(255, 110, 0, 0.08);
-    color: #FF6E00;
-    border: 1px solid rgba(255, 110, 0, 0.3);
-    backdrop-blur: 8px;
+    background-color: rgba(197, 160, 89, 0.08);
+    color: #C5A059;
+    border: 1px solid rgba(197, 160, 89, 0.28);
+    backdrop-filter: blur(8px);
   }
 
   .eyebrow {
@@ -146,45 +146,52 @@
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: #FF6E00;
+    letter-spacing: 0.2em;
+    color: #C5A059;
   }
 
   .title-gradient {
-    background: linear-gradient(180deg, #FFFFFF 0%, #C4C0B6 100%);
+    background: linear-gradient(180deg, #FFFFFF 0%, #D1CEC5 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
   .gold-gradient {
-    background: linear-gradient(180deg, #FF9138 0%, #D95800 100%);
+    background: linear-gradient(180deg, #F3E5C2 0%, #C5A059 55%, #967432 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  /* Glow and depth effects */
-  .glow-amber {
-    box-shadow: 0 10px 40px -10px rgba(255, 110, 0, 0.45);
+  /* Refined glows and depth */
+  .glow-gold {
+    box-shadow: 0 10px 40px -10px rgba(197, 160, 89, 0.35);
   }
 
   .glow-card {
-    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.9), 0 0 40px -15px rgba(255, 110, 0, 0.1);
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.9), 0 0 40px -15px rgba(197, 160, 89, 0.08);
   }
 
   .cutout-shadow {
-    filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 45px rgba(255, 110, 0, 0.18));
+    filter: drop-shadow(0 25px 40px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 50px rgba(197, 160, 89, 0.12));
   }
 
-  /* Subtle background grain */
+  /* Subtle background grain & coordinates */
   .bg-noise {
-    background-image: radial-gradient(rgba(245, 244, 240, 0.04) 1px, transparent 1px);
-    background-size: 32px 32px;
+    background-image: radial-gradient(rgba(245, 244, 240, 0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .bg-grid {
+    background-image: 
+      linear-gradient(to right, rgba(245, 244, 240, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(245, 244, 240, 0.02) 1px, transparent 1px);
+    background-size: 56px 56px;
   }
 
   /* Refined hairline divider */
   .hairline {
     height: 1px;
-    background: linear-gradient(90deg, transparent 0%, rgba(245, 244, 240, 0.15) 30%, rgba(255, 110, 0, 0.3) 50%, rgba(245, 244, 240, 0.15) 70%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(245, 244, 240, 0.1) 25%, rgba(197, 160, 89, 0.3) 50%, rgba(245, 244, 240, 0.1) 75%, transparent 100%);
   }
 
   /* Custom subtle scrollbar */
@@ -192,14 +199,14 @@
     width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #0E0D0C;
+    background: #0B0A09;
   }
   ::-webkit-scrollbar-thumb {
-    background: #25211C;
+    background: #25231E;
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #FF6E00;
+    background: #C5A059;
   }
 }
 

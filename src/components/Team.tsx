@@ -1,19 +1,19 @@
 import React, { useRef } from 'react';
-import { Calendar, Scissors } from 'lucide-react';
+import { Calendar, Scissors, Award } from 'lucide-react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { BARBERS } from '../data/barbershopData';
-import { Language, Barber } from '../types';
+import { Barber } from '../types';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface TeamProps {
-  lang: Language;
+  lang?: string;
   onSelectBarber: (barberId: string) => void;
 }
 
-export const Team: React.FC<TeamProps> = ({ lang, onSelectBarber }) => {
+export const Team: React.FC<TeamProps> = ({ onSelectBarber }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
@@ -59,35 +59,25 @@ export const Team: React.FC<TeamProps> = ({ lang, onSelectBarber }) => {
   );
 
   return (
-    <section id="equipe" ref={containerRef} className="section-y relative bg-[#0C0B0A] border-t border-border">
+    <section id="barbers" ref={containerRef} className="section-y relative bg-[#0C0B0A] border-t border-border">
       <div className="container-x">
         {/* Section Header */}
         <div className="team-header flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="max-w-2xl">
             <div className="eyebrow mb-4">
               <Scissors className="w-4 h-4 text-primary -rotate-45" />
-              <span>{lang === 'en' ? 'Master Craftspeople' : 'Equipe de Mestres'}</span>
+              <span>The Craftsmen</span>
             </div>
             <h2 className="display text-4xl sm:text-5xl md:text-6xl text-foreground uppercase tracking-tight mb-4">
-              {lang === 'en' ? (
-                <>
-                  WHO SHAPES YOUR <span className="pill-word">LOOK.</span>
-                </>
-              ) : (
-                <>
-                  QUEM CUIDA DO SEU <span className="pill-word">VISUAL.</span>
-                </>
-              )}
+              WHO SHAPES YOUR <span className="pill-word">LOOK.</span>
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-              {lang === 'en'
-                ? 'Select a barber whose specialty matches your vision, or choose "Any Available" during booking.'
-                : 'Conheça os perfis e escolha com quem você quer agendar seu atendimento.'}
+              Select a craftsman whose focus matches your personal grooming goals, or choose any available seat during reservation.
             </p>
           </div>
 
           <div className="demo-tag self-start md:self-end">
-            <span>{lang === 'en' ? 'Fictional Demo Profiles' : 'Personagens Fictícios para Demonstração'}</span>
+            <span>Master Barbers</span>
           </div>
         </div>
 
@@ -109,11 +99,15 @@ export const Team: React.FC<TeamProps> = ({ lang, onSelectBarber }) => {
                     <img
                       src={barber.avatar}
                       alt={barber.name}
-                      className="w-full h-full object-cover object-[center_22%] group-hover:scale-106 transition-transform duration-700"
+                      className="w-full h-full object-cover object-[center_22%] group-hover:scale-105 transition-transform duration-700"
                       loading="lazy"
                     />
                     <div className="absolute top-3.5 left-3.5 px-3 py-1 rounded-full bg-background/85 backdrop-blur-md border border-border text-[11px] font-mono font-bold text-primary">
                       0{idx + 1} • MASTER BARBER
+                    </div>
+                    <div className="absolute bottom-3.5 right-3.5 px-2.5 py-1 rounded-full bg-card/90 backdrop-blur-md border border-border text-[10px] font-mono text-muted-foreground flex items-center gap-1.5">
+                      <Award className="w-3 h-3 text-primary" />
+                      <span>{barber.experience}</span>
                     </div>
                   </div>
 
@@ -122,22 +116,20 @@ export const Team: React.FC<TeamProps> = ({ lang, onSelectBarber }) => {
                     {barber.name}
                   </h3>
                   <p className="text-sm font-semibold text-primary mb-3">
-                    {lang === 'en' ? barber.specialty : barber.specialtyPt}
+                    {barber.specialty}
                   </p>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-                    {lang === 'en' ? barber.bio : barber.bioPt}
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-6 font-normal">
+                    {barber.bio}
                   </p>
                 </div>
 
                 {/* Action */}
                 <button
                   onClick={() => onSelectBarber(barber.id)}
-                  className="w-full py-3.5 px-4 rounded-xl border border-border hover:border-primary bg-surface-raised hover:bg-primary hover:text-primary-foreground text-foreground font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] glow-amber"
+                  className="w-full py-3.5 px-4 rounded-xl border border-border hover:border-primary bg-surface-raised hover:bg-primary hover:text-primary-foreground text-foreground font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] glow-gold"
                 >
                   <Calendar className="w-4 h-4" />
-                  <span>
-                    {lang === 'en' ? `Book with ${barber.name.split(' ')[0]}` : `Agendar com ${barber.name}`}
-                  </span>
+                  <span>Reserve with {barber.name.split(' ')[0]}</span>
                   <span className="text-primary group-hover:text-primary-foreground">→</span>
                 </button>
               </div>

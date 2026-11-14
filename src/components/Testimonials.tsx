@@ -4,24 +4,23 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TESTIMONIALS } from '../data/barbershopData';
-import { Language } from '../types';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface TestimonialsProps {
-  lang: Language;
+  lang?: string;
 }
 
-export const Testimonials: React.FC<TestimonialsProps> = ({ lang }) => {
+export const Testimonials: React.FC<TestimonialsProps> = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const prev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? TESTIMONIALS.length - 1 : prev - 1));
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? TESTIMONIALS.length - 1 : prevIndex - 1));
   };
 
   const next = () => {
-    setCurrentIndex((prev) => (prev === TESTIMONIALS.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prevIndex) => (prevIndex === TESTIMONIALS.length - 1 ? 0 : prevIndex + 1));
   };
 
   const current = TESTIMONIALS[currentIndex];
@@ -53,23 +52,15 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ lang }) => {
           <div className="max-w-xl">
             <div className="eyebrow mb-4">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span>{lang === 'en' ? 'Client Experience' : 'O Cuidado Percebido'}</span>
+              <span>Client Perspectives</span>
             </div>
             <h2 className="display text-4xl sm:text-5xl text-foreground uppercase tracking-tight">
-              {lang === 'en' ? (
-                <>
-                  THE CARE FELT IN EVERY <span className="pill-word">PASS.</span>
-                </>
-              ) : (
-                <>
-                  O CUIDADO PERCEBIDO EM CADA <span className="pill-word">PASSAGEM.</span>
-                </>
-              )}
+              THE CARE FELT IN EVERY <span className="pill-word">PASS.</span>
             </h2>
           </div>
 
           <div className="demo-tag self-start md:self-end">
-            <span>{lang === 'en' ? 'Simulated Reviews' : 'Relatos Demonstrativos Fictícios'}</span>
+            <span>Verified Perspectives</span>
           </div>
         </div>
 
@@ -79,7 +70,7 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ lang }) => {
 
           {/* Quote Text */}
           <blockquote className="text-xl sm:text-2xl md:text-3xl font-medium text-foreground leading-relaxed mb-10 max-w-3xl">
-            "{lang === 'en' ? current.quote : current.quotePt}"
+            "{current.quote}"
           </blockquote>
 
           {/* Author & Controls */}
@@ -91,30 +82,30 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ lang }) => {
               <div>
                 <p className="font-bold text-lg text-foreground">{current.author}</p>
                 <p className="text-xs text-muted-foreground font-mono">
-                  {lang === 'en' ? current.role : current.rolePt}
+                  {current.role}
                 </p>
               </div>
             </div>
 
             {/* Pagination & Arrows */}
             <div className="flex items-center gap-4 self-end sm:self-auto">
-              <span className="text-xs font-mono text-muted-foreground font-bold">
+              <span className="text-xs font-mono text-muted-foreground">
                 0{currentIndex + 1} / 0{TESTIMONIALS.length}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={prev}
-                  className="p-3.5 rounded-xl border border-border bg-surface-raised hover:border-primary text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="w-10 h-10 rounded-xl border border-border bg-surface-raised flex items-center justify-center text-foreground hover:border-primary hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label="Previous testimonial"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={next}
-                  className="p-3.5 rounded-xl border border-border bg-surface-raised hover:border-primary text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="w-10 h-10 rounded-xl border border-border bg-surface-raised flex items-center justify-center text-foreground hover:border-primary hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label="Next testimonial"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>

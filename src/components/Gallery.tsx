@@ -4,16 +4,16 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { GALLERY_ITEMS } from '../data/barbershopData';
-import { Language, GalleryItem } from '../types';
+import { GalleryItem } from '../types';
 
 gsap.registerPlugin(ScrollTrigger);
 
 interface GalleryProps {
-  lang: Language;
+  lang?: string;
   onSelectService: (serviceId: string) => void;
 }
 
-export const Gallery: React.FC<GalleryProps> = ({ lang, onSelectService }) => {
+export const Gallery: React.FC<GalleryProps> = ({ onSelectService }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoomItem, setZoomItem] = useState<GalleryItem | null>(null);
 
@@ -60,35 +60,25 @@ export const Gallery: React.FC<GalleryProps> = ({ lang, onSelectService }) => {
   );
 
   return (
-    <section id="estilos" ref={containerRef} className="section-y relative bg-[#0E0D0C] border-t border-border">
+    <section id="gallery" ref={containerRef} className="section-y relative bg-[#0E0D0C] border-t border-border">
       <div className="container-x">
         {/* Section Header */}
         <div className="gallery-header flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="max-w-2xl">
             <div className="eyebrow mb-4">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span>{lang === 'en' ? 'Inspiration Archive' : 'Referências de Estilo'}</span>
+              <span>Inspiration Archive</span>
             </div>
             <h2 className="display text-4xl sm:text-5xl md:text-6xl text-foreground uppercase tracking-tight mb-4">
-              {lang === 'en' ? (
-                <>
-                  FIND YOUR NEXT <span className="pill-word">REFERENCE.</span>
-                </>
-              ) : (
-                <>
-                  ENCONTRE SUA PRÓXIMA <span className="pill-word">REFERÊNCIA.</span>
-                </>
-              )}
+              FIND YOUR NEXT <span className="pill-word">REFERENCE.</span>
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-              {lang === 'en'
-                ? 'Texture, razor outlines, and taper balances. Save an idea to discuss directly in the barber chair.'
-                : 'Textura, linhas e acabamento. Salve uma ideia para conversar com o barbeiro na cadeira.'}
+              Texture profiles, razor perimeter outlines, and taper balances. Select a reference to discuss directly in your barber consultation.
             </p>
           </div>
 
           <div className="demo-tag self-start md:self-end">
-            <span>{lang === 'en' ? 'Editorial Style References' : 'Referências Editoriais'}</span>
+            <span>Editorial Archive</span>
           </div>
         </div>
 
@@ -104,8 +94,8 @@ export const Gallery: React.FC<GalleryProps> = ({ lang, onSelectService }) => {
               <div className="aspect-[3/4] relative overflow-hidden bg-surface-raised">
                 <img
                   src={item.image}
-                  alt={lang === 'en' ? item.title : item.titlePt}
-                  className="w-full h-full object-cover object-center group-hover:scale-108 transition-transform duration-700"
+                  alt={item.title}
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
                 />
 
@@ -114,17 +104,17 @@ export const Gallery: React.FC<GalleryProps> = ({ lang, onSelectService }) => {
 
                 {/* Top Category Tag */}
                 <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-background/85 backdrop-blur-md border border-border text-[11px] font-mono uppercase tracking-wider text-primary font-bold">
-                  0{index + 1} • {lang === 'en' ? item.category : item.categoryPt}
+                  0{index + 1} • {item.category}
                 </div>
 
                 {/* Bottom Info & Action */}
                 <div className="absolute bottom-4 inset-x-4 flex items-end justify-between gap-3">
                   <div>
                     <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest font-semibold mb-0.5">
-                      {lang === 'en' ? 'Click to inspect' : 'Clique para ampliar'}
+                      Click to inspect
                     </p>
                     <h3 className="display text-xl text-foreground uppercase tracking-tight group-hover:text-primary transition-colors">
-                      {lang === 'en' ? item.title : item.titlePt}
+                      {item.title}
                     </h3>
                   </div>
 
@@ -133,8 +123,8 @@ export const Gallery: React.FC<GalleryProps> = ({ lang, onSelectService }) => {
                       e.stopPropagation();
                       onSelectService(item.serviceId);
                     }}
-                    className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-lg glow-amber group-hover:scale-110 transition-transform"
-                    title={lang === 'en' ? 'Book this style' : 'Agendar este estilo'}
+                    className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-lg glow-gold group-hover:scale-110 transition-transform"
+                    title="Book this style"
                     aria-label="Book this style"
                   >
                     <ArrowUpRight className="w-4 h-4" />
@@ -173,10 +163,10 @@ export const Gallery: React.FC<GalleryProps> = ({ lang, onSelectService }) => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <span className="text-xs font-mono uppercase text-primary font-bold">
-                    {lang === 'en' ? zoomItem.category : zoomItem.categoryPt}
+                    {zoomItem.category}
                   </span>
                   <h3 className="display text-2xl text-foreground uppercase">
-                    {lang === 'en' ? zoomItem.title : zoomItem.titlePt}
+                    {zoomItem.title}
                   </h3>
                 </div>
 
@@ -185,9 +175,9 @@ export const Gallery: React.FC<GalleryProps> = ({ lang, onSelectService }) => {
                     onSelectService(zoomItem.serviceId);
                     setZoomItem(null);
                   }}
-                  className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#FF8526] transition-all"
+                  className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#D4AF6A] glow-gold transition-all"
                 >
-                  {lang === 'en' ? 'Choose This Cut' : 'Agendar Este Estilo'}
+                  Choose This Ritual
                 </button>
               </div>
             </div>
