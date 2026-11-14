@@ -1,0 +1,14 @@
+node_modules
+dist
+.cache
+.omc
+*.log
+*.cjs
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!public/**
+routes.js
+styles.css
+index.js
