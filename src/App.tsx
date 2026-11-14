@@ -22,7 +22,7 @@ import { Language, BookingState } from './types';
 gsap.registerPlugin(ScrollTrigger);
 
 export function App() {
-  const [lang, setLang] = useState<Language>('pt'); // Default to PT as requested by reference and kit
+  const [lang, setLang] = useState<Language>('pt');
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
@@ -40,7 +40,6 @@ export function App() {
 
   // Lenis Smooth Scroll Setup with GSAP Ticker synchronization
   useEffect(() => {
-    // Check OS reduced motion preference
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mediaQuery.matches) {
       setReducedMotion(true);
@@ -51,10 +50,10 @@ export function App() {
     }
 
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 1.5,
+      touchMultiplier: 1.2,
     });
 
     lenis.on('scroll', ScrollTrigger.update);
@@ -103,48 +102,51 @@ export function App() {
       <Header lang={lang} setLang={setLang} onOpenBooking={scrollToBooking} />
 
       <main>
-        {/* 2. Editorial Hero Section with 3D Craft Shears Emblem */}
+        {/* 2. Pure Editorial Hero (Zero 3D, Strong Typography, Isolated Cutout, GSAP parallax) */}
         <Hero lang={lang} onOpenBooking={scrollToBooking} />
 
-        {/* 3. Top Infinite Marquee */}
-        <Marquee lang={lang} />
+        {/* 3. Top Infinite Marquee (Craft Track) */}
+        <Marquee lang={lang} variant="craft" />
 
-        {/* 4. Storytelling Ritual in 3 Chapters (GSAP ScrollTrigger) */}
+        {/* 4. Storytelling Ritual in 3 Chapters (Cutouts & GSAP ScrollTrigger) */}
         <Storytelling lang={lang} />
 
-        {/* 5. Services Menu (3 Cards with clear durations and pricing) */}
+        {/* 5. Services Menu (3 Cards with Cutouts & Staggered Entrance) */}
         <Services lang={lang} onSelectService={handleSelectServiceFromCard} />
 
-        {/* 6. Style References Gallery */}
+        {/* 6. Style References Gallery (Haircut and texture focus) */}
         <Gallery lang={lang} onSelectService={handleSelectServiceFromCard} />
 
-        {/* 7. Atmosphere & The Craft (Dual Photo Composition) */}
+        {/* 7. Secondary Reverse Marquee (Ritual Track) */}
+        <Marquee lang={lang} variant="ritual" reverse={true} />
+
+        {/* 8. Atmosphere & The Craft (Dual Photo Composition & Parallax) */}
         <Atmosphere lang={lang} />
 
-        {/* 8. Master Barbers Team */}
+        {/* 9. Master Barbers Team (Asymmetric Layout & Direct Booking) */}
         <Team lang={lang} onSelectBarber={handleSelectBarberFromCard} />
 
-        {/* 9. Verified Simulated Testimonials Carousel */}
+        {/* 10. Verified Simulated Testimonials Carousel */}
         <Testimonials lang={lang} />
 
-        {/* 10. Interactive 5-Step Scheduling Engine */}
+        {/* 11. Interactive 5-Step Scheduling Engine */}
         <BookingSystem
           lang={lang}
           bookingState={bookingState}
           setBookingState={setBookingState}
         />
 
-        {/* 11. Pinheiros Location & Schedule */}
+        {/* 12. Pinheiros Location & Schedule */}
         <LocationAndHours lang={lang} onOpenBooking={scrollToBooking} />
 
-        {/* 12. Accessible FAQ Accordion */}
+        {/* 13. Accessible FAQ Accordion */}
         <FAQ lang={lang} />
 
-        {/* 13. High-Impact Closing CTA */}
+        {/* 14. High-Impact Closing CTA */}
         <FinalCTA lang={lang} onOpenBooking={scrollToBooking} />
       </main>
 
-      {/* 14. Comprehensive Footer with Motion Preferences */}
+      {/* 15. Comprehensive Footer with Motion Preferences */}
       <Footer
         lang={lang}
         reducedMotion={reducedMotion}
@@ -152,7 +154,7 @@ export function App() {
         onOpenDemoModal={() => setIsDemoModalOpen(true)}
       />
 
-      {/* 15. Educational Transparency Modal */}
+      {/* 16. Educational Transparency Modal */}
       <DemoModal
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}

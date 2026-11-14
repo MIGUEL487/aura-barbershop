@@ -4,17 +4,17 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #11100F;
-  --foreground: #F4F2EC;
-  --card: #181715;
-  --card-foreground: #F4F2EC;
-  --surface-raised: #22201D;
-  --primary: #E68A2E;
-  --primary-foreground: #14120C;
-  --primary-deep: #B85E1A;
-  --muted: #201E1B;
-  --muted-foreground: #B5B0A4;
-  --border: rgba(244, 242, 236, 0.14);
+  --background: #0E0D0C;
+  --foreground: #F5F4F0;
+  --card: #171513;
+  --card-foreground: #F5F4F0;
+  --surface-raised: #221E1A;
+  --primary: #FF6E00;
+  --primary-foreground: #0E0D0C;
+  --primary-deep: #D95800;
+  --muted: #1F1C18;
+  --muted-foreground: #A8A39B;
+  --border: rgba(245, 244, 240, 0.12);
 }
 
 @layer base {
@@ -33,6 +33,7 @@
     background-color: var(--background);
     color: var(--foreground);
     overflow-x: hidden;
+    position: relative;
   }
 
   /* Lenis recommended smooth scroll setup */
@@ -60,7 +61,7 @@
 @layer utilities {
   .container-x {
     width: 100%;
-    max-width: 84rem;
+    max-width: 86rem;
     margin-left: auto;
     margin-right: auto;
     padding-left: 1.25rem;
@@ -74,31 +75,31 @@
   }
   @media (min-width: 1024px) {
     .container-x {
-      padding-left: 3rem;
-      padding-right: 3rem;
+      padding-left: 3.5rem;
+      padding-right: 3.5rem;
     }
   }
 
   .section-y {
-    padding-top: 5rem;
-    padding-bottom: 5rem;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
   }
   @media (min-width: 768px) {
     .section-y {
-      padding-top: 7rem;
-      padding-bottom: 7rem;
+      padding-top: 8rem;
+      padding-bottom: 8rem;
     }
   }
   @media (min-width: 1024px) {
     .section-y {
-      padding-top: 8.5rem;
-      padding-bottom: 8.5rem;
+      padding-top: 10rem;
+      padding-bottom: 10rem;
     }
   }
 
   .display {
     font-family: 'Anton', Impact, sans-serif;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
     text-transform: uppercase;
   }
 
@@ -110,57 +111,95 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* Aesthetic pill words from reference */
+  .pill-word {
+    display: inline-block;
+    padding: 0.1em 0.35em;
+    border-radius: 9999px;
+    border: 1.5px solid #FF6E00;
+    color: #FF6E00;
+    box-shadow: 0 0 25px -4px rgba(255, 110, 0, 0.4);
+    letter-spacing: -0.01em;
+    margin: 0 0.08em;
+  }
+
   .demo-tag {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.25rem 0.625rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    background-color: rgba(230, 138, 46, 0.1);
-    color: #E68A2E;
-    border: 1px solid rgba(230, 138, 46, 0.25);
+    background-color: rgba(255, 110, 0, 0.08);
+    color: #FF6E00;
+    border: 1px solid rgba(255, 110, 0, 0.3);
+    backdrop-blur: 8px;
   }
 
   .eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: #E68A2E;
+    letter-spacing: 0.18em;
+    color: #FF6E00;
   }
 
   .title-gradient {
-    background: linear-gradient(180deg, #F4F2EC 0%, #A8A49C 100%);
+    background: linear-gradient(180deg, #FFFFFF 0%, #C4C0B6 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
   .gold-gradient {
-    background: linear-gradient(180deg, #F3BA70 0%, #B85E1A 100%);
+    background: linear-gradient(180deg, #FF9138 0%, #D95800 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
+  /* Glow and depth effects */
+  .glow-amber {
+    box-shadow: 0 10px 40px -10px rgba(255, 110, 0, 0.45);
+  }
+
+  .glow-card {
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.9), 0 0 40px -15px rgba(255, 110, 0, 0.1);
+  }
+
+  .cutout-shadow {
+    filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 45px rgba(255, 110, 0, 0.18));
+  }
+
+  /* Subtle background grain */
+  .bg-noise {
+    background-image: radial-gradient(rgba(245, 244, 240, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* Refined hairline divider */
+  .hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(245, 244, 240, 0.15) 30%, rgba(255, 110, 0, 0.3) 50%, rgba(245, 244, 240, 0.15) 70%, transparent 100%);
+  }
+
   /* Custom subtle scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: #11100F;
+    background: #0E0D0C;
   }
   ::-webkit-scrollbar-thumb {
-    background: #2A2723;
-    border-radius: 4px;
+    background: #25211C;
+    border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #E68A2E;
+    background: #FF6E00;
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useId } from 'react';
+import React, { useState, useRef, useId } from 'react';
 import {
   Calendar as CalendarIcon,
   User,
@@ -10,8 +10,13 @@ import {
   Phone,
   AlertCircle
 } from 'lucide-react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SERVICES, BARBERS } from '../data/barbershopData';
 import { BookingState, Language, Service, Barber } from '../types';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface BookingSystemProps {
   lang: Language;
@@ -24,10 +29,43 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
   bookingState,
   setBookingState,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const nameInputId = useId();
   const phoneInputId = useId();
   const notesInputId = useId();
+
+  useGSAP(
+    () => {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) return;
+
+      gsap.from('.booking-header', {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top 85%',
+          toggleActions: 'play none none reverse',
+        },
+        y: 40,
+        opacity: 0,
+        duration: 0.8,
+        ease: 'power3.out',
+      });
+
+      gsap.from('.booking-box', {
+        scrollTrigger: {
+          trigger: '.booking-box',
+          start: 'top 80%',
+          toggleActions: 'play none none reverse',
+        },
+        y: 50,
+        opacity: 0,
+        duration: 0.9,
+        ease: 'power3.out',
+      });
+    },
+    { scope: containerRef }
+  );
 
   // Helper to get selected objects
   const selectedService: Service | undefined = SERVICES.find((s) => s.id === bookingState.serviceId);
@@ -71,7 +109,6 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
     setBookingState((prev) => ({
       ...prev,
       serviceId: id,
-      // If duration changed, user can continue
       step: 2,
     }));
     setErrorMsg(null);
@@ -90,7 +127,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
     setBookingState((prev) => ({
       ...prev,
       date: iso,
-      time: null, // reset time slot when date changes
+      time: null,
     }));
   };
 
@@ -163,16 +200,24 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
   ];
 
   return (
-    <section id="agendar" className="section-y relative bg-[#131210] border-t border-border">
+    <section id="agendar" ref={containerRef} className="section-y relative bg-[#11100F] border-t border-border">
       <div className="container-x">
-        {/* Header */}
-        <div className="max-w-3xl mb-12">
+        {/* Header with Pill Word */}
+        <div className="booking-header max-w-3xl mb-12">
           <div className="eyebrow mb-4">
             <CalendarIcon className="w-4 h-4 text-primary" />
             <span>{lang === 'en' ? 'Appointment Booking' : 'Sistema de Agendamento'}</span>
           </div>
           <h2 className="display text-4xl sm:text-5xl md:text-6xl text-foreground uppercase tracking-tight mb-4">
-            {lang === 'en' ? 'RESERVE YOUR CHAIR.' : 'SEU PRÓXIMO CORTE COMEÇA AQUI.'}
+            {lang === 'en' ? (
+              <>
+                YOUR NEXT CUT STARTS <span className="pill-word">HERE.</span>
+              </>
+            ) : (
+              <>
+                SEU PRÓXIMO CORTE COMEÇA <span className="pill-word">AQUI.</span>
+              </>
+            )}
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
             {lang === 'en'
@@ -203,7 +248,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                   >
                     <div
                       className={`h-1.5 rounded-full transition-colors ${
-                        isActive ? 'bg-primary' : isPassed ? 'bg-primary/50' : 'bg-surface-raised'
+                        isActive ? 'bg-primary glow-amber' : isPassed ? 'bg-primary/50' : 'bg-surface-raised'
                       }`}
                     />
                     <span
@@ -225,14 +270,14 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
         )}
 
         {/* Main Grid: Steps (Col 8) + Summary Sidebar (Col 4) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="booking-box grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Active Step Interactive View */}
-          <div className="lg:col-span-8 bg-card border border-border rounded-2xl p-6 sm:p-10 shadow-2xl">
+          <div className="lg:col-span-8 bg-card border border-border rounded-3xl p-6 sm:p-10 shadow-2xl">
             {/* If Confirmed Success Screen */}
             {bookingState.isConfirmed ? (
               <div className="text-center py-8">
                 {/* Checkmark Animation */}
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-primary check-draw">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-primary check-draw glow-amber">
                   <CheckCircle2 className="w-12 h-12 stroke-[2.5]" />
                 </div>
 
@@ -251,22 +296,22 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                 </p>
 
                 {/* Recap Box */}
-                <div className="max-w-md mx-auto bg-surface-raised border border-border rounded-xl p-6 text-left space-y-3 mb-8 text-sm">
-                  <div className="flex justify-between py-1 border-b border-border/60">
+                <div className="max-w-md mx-auto bg-surface-raised border border-border rounded-2xl p-6 text-left space-y-3 mb-8 text-sm">
+                  <div className="flex justify-between py-1.5 border-b border-border/60">
                     <span className="text-muted-foreground">{lang === 'en' ? 'Client' : 'Cliente'}:</span>
                     <span className="font-bold text-foreground">{bookingState.clientName}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-border/60">
+                  <div className="flex justify-between py-1.5 border-b border-border/60">
                     <span className="text-muted-foreground">{lang === 'en' ? 'Phone' : 'Telefone'}:</span>
                     <span className="font-mono text-foreground">{bookingState.clientPhone}</span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-border/60">
+                  <div className="flex justify-between py-1.5 border-b border-border/60">
                     <span className="text-muted-foreground">{lang === 'en' ? 'Service' : 'Serviço'}:</span>
                     <span className="font-bold text-primary">
                       {selectedService ? (lang === 'en' ? selectedService.name : selectedService.namePt) : '—'}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-border/60">
+                  <div className="flex justify-between py-1.5 border-b border-border/60">
                     <span className="text-muted-foreground">{lang === 'en' ? 'Barber' : 'Barbeiro'}:</span>
                     <span className="font-semibold text-foreground">
                       {bookingState.barberId === 'any'
@@ -276,13 +321,13 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                         : selectedBarber?.name}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 border-b border-border/60">
+                  <div className="flex justify-between py-1.5 border-b border-border/60">
                     <span className="text-muted-foreground">{lang === 'en' ? 'Schedule' : 'Data & Horário'}:</span>
                     <span className="font-mono text-foreground">
                       {bookingState.date} às {bookingState.time}
                     </span>
                   </div>
-                  <div className="flex justify-between py-1 pt-2">
+                  <div className="flex justify-between py-1.5 pt-2">
                     <span className="font-bold text-foreground">{lang === 'en' ? 'Total (Demo)' : 'Valor'}:</span>
                     <span className="font-bold text-primary text-base">R$ {selectedService?.price}</span>
                   </div>
@@ -317,10 +362,10 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                           <div
                             key={srv.id}
                             onClick={() => handleSelectService(srv.id)}
-                            className={`p-5 rounded-xl border cursor-pointer transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                            className={`p-5 rounded-2xl border cursor-pointer transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                               isSelected
-                                ? 'border-primary bg-primary/10 shadow-lg'
-                                : 'border-border bg-surface-raised/60 hover:border-border/80'
+                                ? 'border-primary bg-primary/10 shadow-lg glow-card'
+                                : 'border-border bg-surface-raised/60 hover:border-primary/50'
                             }`}
                           >
                             <div className="flex-1">
@@ -328,7 +373,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                                 <h4 className="font-bold text-lg text-foreground">
                                   {lang === 'en' ? srv.name : srv.namePt}
                                 </h4>
-                                <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-background border border-border text-muted-foreground">
+                                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-background border border-border text-primary font-bold">
                                   {srv.duration} min
                                 </span>
                               </div>
@@ -372,10 +417,10 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                       {/* Any Available Option */}
                       <div
                         onClick={() => handleSelectBarber('any')}
-                        className={`p-5 rounded-xl border cursor-pointer transition-all flex items-center gap-4 sm:col-span-2 ${
+                        className={`p-5 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 sm:col-span-2 ${
                           bookingState.barberId === 'any'
-                            ? 'border-primary bg-primary/10 shadow-lg'
-                            : 'border-border bg-surface-raised/60 hover:border-border/80'
+                            ? 'border-primary bg-primary/10 shadow-lg glow-card'
+                            : 'border-border bg-surface-raised/60 hover:border-primary/50'
                         }`}
                       >
                         <div className="w-14 h-14 rounded-xl bg-background border border-border flex items-center justify-center text-primary shrink-0">
@@ -400,10 +445,10 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                           <div
                             key={barber.id}
                             onClick={() => handleSelectBarber(barber.id)}
-                            className={`p-4 rounded-xl border cursor-pointer transition-all flex items-center gap-4 ${
+                            className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center gap-4 ${
                               isSelected
-                                ? 'border-primary bg-primary/10 shadow-lg'
-                                : 'border-border bg-surface-raised/60 hover:border-border/80'
+                                ? 'border-primary bg-primary/10 shadow-lg glow-card'
+                                : 'border-border bg-surface-raised/60 hover:border-primary/50'
                             }`}
                           >
                             <img
@@ -448,7 +493,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
 
                     {/* Date Horizontal Selector */}
                     <div className="mb-6">
-                      <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-3">
+                      <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-3 font-bold">
                         {lang === 'en' ? 'Select Date' : 'Selecione a Data'}
                       </label>
                       <div className="grid grid-cols-5 gap-2 sm:gap-3">
@@ -458,9 +503,9 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                             <button
                               key={d.iso}
                               onClick={() => handleSelectDate(d.iso)}
-                              className={`p-3 rounded-xl border text-center transition-all ${
+                              className={`p-3 rounded-2xl border text-center transition-all ${
                                 isSelected
-                                  ? 'border-primary bg-primary text-primary-foreground font-bold shadow-md'
+                                  ? 'border-primary bg-primary text-primary-foreground font-bold shadow-md glow-amber'
                                   : 'border-border bg-surface-raised hover:border-primary/50 text-foreground'
                               }`}
                             >
@@ -480,7 +525,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                     {/* Time Slot Selector */}
                     {bookingState.date && (
                       <div className="mb-6">
-                        <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-3">
+                        <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-3 font-bold">
                           {lang === 'en' ? 'Available Time Slots' : 'Horários Disponíveis'}
                         </label>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -503,7 +548,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                                 onClick={() => handleSelectTime(slot.time)}
                                 className={`py-3 px-2 rounded-xl border text-xs font-mono font-bold transition-all ${
                                   isSelected
-                                    ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                                    ? 'border-primary bg-primary text-primary-foreground shadow-md glow-amber'
                                     : 'border-border bg-surface-raised hover:border-primary text-foreground'
                                 }`}
                               >
@@ -516,7 +561,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                     )}
 
                     {errorMsg && (
-                      <div className="mb-6 p-3 rounded-xl border border-destructive/50 bg-destructive/10 text-destructive text-xs flex items-center gap-2">
+                      <div className="mb-6 p-3.5 rounded-xl border border-destructive/50 bg-destructive/10 text-destructive text-xs flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 shrink-0" />
                         <span>{errorMsg}</span>
                       </div>
@@ -533,7 +578,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
 
                       <button
                         onClick={handleNextFromSchedule}
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#F39A3C]"
+                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#FF8526] glow-amber"
                       >
                         <span>{lang === 'en' ? 'Continue' : 'Continuar'}</span>
                         <ChevronRight className="w-4 h-4" />
@@ -556,7 +601,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
 
                     <div className="space-y-4 max-w-md">
                       <div>
-                        <label htmlFor={nameInputId} className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
+                        <label htmlFor={nameInputId} className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5 font-bold">
                           {lang === 'en' ? 'Full Name' : 'Nome Completo'} *
                         </label>
                         <div className="relative">
@@ -568,14 +613,14 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                               setBookingState((prev) => ({ ...prev, clientName: e.target.value }))
                             }
                             placeholder={lang === 'en' ? 'e.g. Liam Parker' : 'Ex: André Martins'}
-                            className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                            className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
                           />
-                          <User className="w-4 h-4 text-muted-foreground absolute right-3.5 top-3.5" />
+                          <User className="w-4 h-4 text-muted-foreground absolute right-3.5 top-4" />
                         </div>
                       </div>
 
                       <div>
-                        <label htmlFor={phoneInputId} className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
+                        <label htmlFor={phoneInputId} className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5 font-bold">
                           {lang === 'en' ? 'Phone / WhatsApp' : 'Telefone / WhatsApp com DDD'} *
                         </label>
                         <div className="relative">
@@ -587,14 +632,14 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                               setBookingState((prev) => ({ ...prev, clientPhone: e.target.value }))
                             }
                             placeholder={lang === 'en' ? '+1 (555) 019-2834' : '(11) 98765-4321'}
-                            className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                            className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
                           />
-                          <Phone className="w-4 h-4 text-muted-foreground absolute right-3.5 top-3.5" />
+                          <Phone className="w-4 h-4 text-muted-foreground absolute right-3.5 top-4" />
                         </div>
                       </div>
 
                       <div>
-                        <label htmlFor={notesInputId} className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
+                        <label htmlFor={notesInputId} className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5 font-bold">
                           {lang === 'en' ? 'Notes or Styling Ideas (Optional)' : 'Observações ou Preferências (Opcional)'}
                         </label>
                         <textarea
@@ -609,13 +654,13 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                               ? 'e.g. Skin fade with scissor work on top'
                               : 'Ex: Degradê navalhado com tesoura em cima'
                           }
-                          className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
+                          className="w-full bg-surface-raised border border-border rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none"
                         />
                       </div>
                     </div>
 
                     {errorMsg && (
-                      <div className="mt-4 p-3 rounded-xl border border-destructive/50 bg-destructive/10 text-destructive text-xs flex items-center gap-2">
+                      <div className="mt-4 p-3.5 rounded-xl border border-destructive/50 bg-destructive/10 text-destructive text-xs flex items-center gap-2">
                         <AlertCircle className="w-4 h-4 shrink-0" />
                         <span>{errorMsg}</span>
                       </div>
@@ -632,7 +677,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
 
                       <button
                         onClick={handleNextFromDetails}
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#F39A3C]"
+                        className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-[#FF8526] glow-amber"
                       >
                         <span>{lang === 'en' ? 'Review Booking' : 'Revisar Agendamento'}</span>
                         <ChevronRight className="w-4 h-4" />
@@ -653,8 +698,8 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                         : 'Nenhum pagamento será realizado. Esta é uma demonstração.'}
                     </p>
 
-                    <div className="divide-y divide-border rounded-xl border border-border bg-surface-raised/40 mb-6">
-                      <div className="p-4 flex justify-between items-center">
+                    <div className="divide-y divide-border rounded-2xl border border-border bg-surface-raised/40 mb-6">
+                      <div className="p-4.5 flex justify-between items-center">
                         <div>
                           <span className="text-xs text-muted-foreground block font-mono">
                             {lang === 'en' ? 'SERVICE' : 'SERVIÇO'}
@@ -666,7 +711,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                         <span className="font-bold text-primary">R$ {selectedService?.price}</span>
                       </div>
 
-                      <div className="p-4 flex justify-between items-center">
+                      <div className="p-4.5 flex justify-between items-center">
                         <div>
                           <span className="text-xs text-muted-foreground block font-mono">
                             {lang === 'en' ? 'BARBER' : 'PROFISSIONAL'}
@@ -681,13 +726,13 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                         </div>
                         <button
                           onClick={() => setBookingState((prev) => ({ ...prev, step: 2 }))}
-                          className="text-xs text-primary underline"
+                          className="text-xs text-primary underline font-bold"
                         >
                           {lang === 'en' ? 'Edit' : 'Editar'}
                         </button>
                       </div>
 
-                      <div className="p-4 flex justify-between items-center">
+                      <div className="p-4.5 flex justify-between items-center">
                         <div>
                           <span className="text-xs text-muted-foreground block font-mono">
                             {lang === 'en' ? 'SCHEDULE' : 'DATA E HORÁRIO'}
@@ -698,13 +743,13 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                         </div>
                         <button
                           onClick={() => setBookingState((prev) => ({ ...prev, step: 3 }))}
-                          className="text-xs text-primary underline"
+                          className="text-xs text-primary underline font-bold"
                         >
                           {lang === 'en' ? 'Edit' : 'Editar'}
                         </button>
                       </div>
 
-                      <div className="p-4 flex justify-between items-center">
+                      <div className="p-4.5 flex justify-between items-center">
                         <div>
                           <span className="text-xs text-muted-foreground block font-mono">
                             {lang === 'en' ? 'CLIENT' : 'CLIENTE'}
@@ -715,7 +760,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                         </div>
                         <button
                           onClick={() => setBookingState((prev) => ({ ...prev, step: 4 }))}
-                          className="text-xs text-primary underline"
+                          className="text-xs text-primary underline font-bold"
                         >
                           {lang === 'en' ? 'Edit' : 'Editar'}
                         </button>
@@ -733,7 +778,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
 
                       <button
                         onClick={handleConfirmSimulation}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-xl shadow-primary/25 hover:bg-[#F39A3C] active:scale-[0.98] transition-all"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-xl glow-amber hover:bg-[#FF8526] active:scale-[0.98] transition-all"
                       >
                         <CheckCircle2 className="w-5 h-5" />
                         <span>
@@ -750,8 +795,8 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
           </div>
 
           {/* Right Column: Live Sticky Summary Sidebar */}
-          <div className="lg:col-span-4 bg-card border border-border rounded-2xl p-6 sticky top-28 shadow-xl">
-            <h4 className="text-xs font-mono uppercase tracking-widest text-primary font-bold mb-4 flex items-center gap-2">
+          <div className="lg:col-span-4 bg-card border border-border rounded-3xl p-6 sm:p-8 sticky top-28 shadow-2xl glow-card">
+            <h4 className="text-xs font-mono uppercase tracking-widest text-primary font-bold mb-5 flex items-center gap-2">
               <Sparkles className="w-3.5 h-3.5" />
               <span>{lang === 'en' ? 'Booking Summary' : 'Resumo do Agendamento'}</span>
             </h4>
@@ -759,10 +804,10 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
             <div className="space-y-4 text-sm divide-y divide-border/60">
               {/* Selected Service */}
               <div className="pt-2 first:pt-0">
-                <span className="text-xs text-muted-foreground block">
+                <span className="text-xs text-muted-foreground block font-mono">
                   {lang === 'en' ? 'Chosen Service' : 'Serviço'}
                 </span>
-                <p className="font-bold text-foreground mt-0.5">
+                <p className="font-bold text-foreground mt-0.5 text-base">
                   {selectedService
                     ? lang === 'en'
                       ? selectedService.name
@@ -772,7 +817,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
                     : 'Ainda não selecionado'}
                 </p>
                 {selectedService && (
-                  <span className="text-xs font-mono text-muted-foreground">
+                  <span className="text-xs font-mono text-primary font-bold">
                     {selectedService.duration} min
                   </span>
                 )}
@@ -780,7 +825,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
 
               {/* Selected Barber */}
               <div className="pt-3">
-                <span className="text-xs text-muted-foreground block">
+                <span className="text-xs text-muted-foreground block font-mono">
                   {lang === 'en' ? 'Barber' : 'Profissional'}
                 </span>
                 <p className="font-bold text-foreground mt-0.5">
@@ -794,7 +839,7 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
 
               {/* Selected Time */}
               <div className="pt-3">
-                <span className="text-xs text-muted-foreground block">
+                <span className="text-xs text-muted-foreground block font-mono">
                   {lang === 'en' ? 'Date & Time' : 'Data e Horário'}
                 </span>
                 <p className="font-mono font-semibold text-foreground mt-0.5">
@@ -807,17 +852,17 @@ export const BookingSystem: React.FC<BookingSystemProps> = ({
               </div>
 
               {/* Price Total */}
-              <div className="pt-4 flex items-baseline justify-between">
-                <span className="font-bold text-foreground text-sm">
+              <div className="pt-5 flex items-baseline justify-between">
+                <span className="font-bold text-foreground text-sm uppercase tracking-wider font-mono">
                   {lang === 'en' ? 'Total' : 'Total Previsto'}
                 </span>
-                <span className="tnum display text-3xl text-primary font-bold">
+                <span className="tnum display text-3xl sm:text-4xl text-primary font-bold">
                   R$ {selectedService?.price || 0}
                 </span>
               </div>
             </div>
 
-            <div className="mt-6 p-3 rounded-xl bg-surface-raised border border-border/80 text-[11px] text-muted-foreground leading-normal">
+            <div className="mt-6 p-3.5 rounded-2xl bg-surface-raised border border-border/80 text-[11px] text-muted-foreground leading-normal">
               <p>
                 {lang === 'en'
                   ? 'Honest demonstration prototype. No live database transactions or charges are incurred.'

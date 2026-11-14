@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, Quote, Sparkles } from 'lucide-react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { TESTIMONIALS } from '../data/barbershopData';
 import { Language } from '../types';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface TestimonialsProps {
   lang: Language;
 }
 
 export const Testimonials: React.FC<TestimonialsProps> = ({ lang }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const prev = () => {
@@ -20,16 +26,45 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ lang }) => {
 
   const current = TESTIMONIALS[currentIndex];
 
+  useGSAP(
+    () => {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) return;
+
+      gsap.from('.testimonials-card', {
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top 80%',
+          toggleActions: 'play none none reverse',
+        },
+        y: 50,
+        opacity: 0,
+        duration: 0.9,
+        ease: 'power3.out',
+      });
+    },
+    { scope: containerRef }
+  );
+
   return (
-    <section className="section-y relative bg-card/40 border-t border-border overflow-hidden">
+    <section ref={containerRef} className="section-y relative bg-[#0E0D0C] border-t border-border overflow-hidden">
       <div className="container-x">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
           <div className="max-w-xl">
             <div className="eyebrow mb-4">
+              <Sparkles className="w-4 h-4 text-primary" />
               <span>{lang === 'en' ? 'Client Experience' : 'O Cuidado Percebido'}</span>
             </div>
             <h2 className="display text-4xl sm:text-5xl text-foreground uppercase tracking-tight">
-              {lang === 'en' ? 'TESTIMONIALS & REVIEWS.' : 'DEPOIMENTOS DE QUEM FREQUENTA.'}
+              {lang === 'en' ? (
+                <>
+                  THE CARE FELT IN EVERY <span className="pill-word">PASS.</span>
+                </>
+              ) : (
+                <>
+                  O CUIDADO PERCEBIDO EM CADA <span className="pill-word">PASSAGEM.</span>
+                </>
+              )}
             </h2>
           </div>
 
@@ -39,8 +74,8 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ lang }) => {
         </div>
 
         {/* Carousel Card */}
-        <div className="relative rounded-2xl border border-border bg-card p-8 md:p-14 shadow-2xl">
-          <Quote className="w-12 h-12 text-primary/40 mb-6" />
+        <div className="testimonials-card relative rounded-3xl border border-border bg-card p-8 md:p-14 shadow-2xl glow-card">
+          <Quote className="w-12 h-12 text-primary mb-6 opacity-80" />
 
           {/* Quote Text */}
           <blockquote className="text-xl sm:text-2xl md:text-3xl font-medium text-foreground leading-relaxed mb-10 max-w-3xl">
@@ -63,20 +98,20 @@ export const Testimonials: React.FC<TestimonialsProps> = ({ lang }) => {
 
             {/* Pagination & Arrows */}
             <div className="flex items-center gap-4 self-end sm:self-auto">
-              <span className="text-xs font-mono text-muted-foreground">
+              <span className="text-xs font-mono text-muted-foreground font-bold">
                 0{currentIndex + 1} / 0{TESTIMONIALS.length}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={prev}
-                  className="p-3 rounded-xl border border-border bg-surface-raised hover:border-primary text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="p-3.5 rounded-xl border border-border bg-surface-raised hover:border-primary text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label="Previous testimonial"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={next}
-                  className="p-3 rounded-xl border border-border bg-surface-raised hover:border-primary text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="p-3.5 rounded-xl border border-border bg-surface-raised hover:border-primary text-foreground hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                   aria-label="Next testimonial"
                 >
                   <ChevronRight className="w-5 h-5" />
