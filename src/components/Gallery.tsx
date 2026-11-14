@@ -22,31 +22,39 @@ export const Gallery: React.FC<GalleryProps> = ({ lang, onSelectService }) => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReducedMotion) return;
 
-      gsap.from('.gallery-header', {
-        scrollTrigger: {
-          trigger: '.gallery-header',
-          start: 'top 85%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        '.gallery-header',
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 85%',
+            once: true,
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+        }
+      );
 
       const cards = gsap.utils.toArray<HTMLElement>('.gallery-card');
-      gsap.from(cards, {
-        scrollTrigger: {
-          trigger: '.gallery-grid',
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 50,
-        opacity: 0,
-        stagger: 0.12,
-        duration: 0.8,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        cards,
+        { y: 40, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: '.gallery-grid',
+            start: 'top 85%',
+            once: true,
+          },
+          y: 0,
+          opacity: 1,
+          stagger: 0.12,
+          duration: 0.8,
+          ease: 'power3.out',
+        }
+      );
     },
     { scope: containerRef }
   );

@@ -21,31 +21,39 @@ export const Team: React.FC<TeamProps> = ({ lang, onSelectBarber }) => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReducedMotion) return;
 
-      gsap.from('.team-header', {
-        scrollTrigger: {
-          trigger: '.team-header',
-          start: 'top 85%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        '.team-header',
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 85%',
+            once: true,
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+        }
+      );
 
       const cards = gsap.utils.toArray<HTMLElement>('.team-card');
-      gsap.from(cards, {
-        scrollTrigger: {
-          trigger: '.team-grid',
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 60,
-        opacity: 0,
-        stagger: 0.18,
-        duration: 0.9,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        cards,
+        { y: 50, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: '.team-grid',
+            start: 'top 85%',
+            once: true,
+          },
+          y: 0,
+          opacity: 1,
+          stagger: 0.15,
+          duration: 0.8,
+          ease: 'power3.out',
+        }
+      );
     },
     { scope: containerRef }
   );

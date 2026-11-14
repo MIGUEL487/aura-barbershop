@@ -16,7 +16,6 @@ interface ServicesProps {
 export const Services: React.FC<ServicesProps> = ({ lang, onSelectService }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Map service IDs to the respective transparent cutout illustration
   const serviceCutouts: Record<string, string> = {
     corte: '/assets/cutouts/fade-cutout.png',
     barba: '/assets/cutouts/hot-towel-cutout.png',
@@ -28,31 +27,39 @@ export const Services: React.FC<ServicesProps> = ({ lang, onSelectService }) => 
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReducedMotion) return;
 
-      gsap.from('.services-header', {
-        scrollTrigger: {
-          trigger: '.services-header',
-          start: 'top 85%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        '.services-header',
+        { y: 30, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 85%',
+            once: true,
+          },
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+        }
+      );
 
       const cards = gsap.utils.toArray<HTMLElement>('.service-card');
-      gsap.from(cards, {
-        scrollTrigger: {
-          trigger: '.services-grid',
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 60,
-        opacity: 0,
-        stagger: 0.16,
-        duration: 0.9,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        cards,
+        { y: 50, opacity: 0 },
+        {
+          scrollTrigger: {
+            trigger: '.services-grid',
+            start: 'top 85%',
+            once: true,
+          },
+          y: 0,
+          opacity: 1,
+          stagger: 0.15,
+          duration: 0.8,
+          ease: 'power3.out',
+        }
+      );
     },
     { scope: containerRef }
   );

@@ -65,7 +65,13 @@ export function App() {
     gsap.ticker.add(updateLenis);
     gsap.ticker.lagSmoothing(0);
 
+    // Ensure ScrollTrigger calculates accurate offsets
+    const timeout = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 400);
+
     return () => {
+      clearTimeout(timeout);
       gsap.ticker.remove(updateLenis);
       lenis.destroy();
     };

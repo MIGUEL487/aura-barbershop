@@ -14,10 +14,6 @@ interface HeroProps {
 
 export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
   const heroRef = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLHeadingElement>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
-  const ctaRef = useRef<HTMLDivElement>(null);
-  const badgesRef = useRef<HTMLDivElement>(null);
   const cutoutContainerRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
 
@@ -26,88 +22,73 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReducedMotion) return;
 
-      // Entrance timeline
+      // Entrance animation
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
-      tl.from('.hero-badge', {
-        y: -20,
-        opacity: 0,
-        duration: 0.6,
-      })
-        .from(
+      tl.fromTo(
+        '.hero-badge',
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 }
+      )
+        .fromTo(
           '.hero-title-line',
-          {
-            y: 50,
-            opacity: 0,
-            stagger: 0.12,
-            duration: 0.9,
-          },
+          { y: 40, opacity: 0 },
+          { y: 0, opacity: 1, stagger: 0.12, duration: 0.8 },
           '-=0.3'
         )
-        .from(
-          textRef.current,
-          {
-            y: 25,
-            opacity: 0,
-            duration: 0.7,
-          },
+        .fromTo(
+          '.hero-desc',
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.7 },
           '-=0.5'
         )
-        .from(
-          ctaRef.current?.children || [],
-          {
-            y: 20,
-            opacity: 0,
-            stagger: 0.1,
-            duration: 0.6,
-          },
+        .fromTo(
+          '.hero-cta-btn',
+          { y: 20, opacity: 0 },
+          { y: 0, opacity: 1, stagger: 0.1, duration: 0.6 },
           '-=0.4'
         )
-        .from(
-          badgesRef.current,
-          {
-            y: 15,
-            opacity: 0,
-            duration: 0.6,
-          },
+        .fromTo(
+          '.hero-badge-item',
+          { y: 15, opacity: 0 },
+          { y: 0, opacity: 1, stagger: 0.08, duration: 0.5 },
           '-=0.3'
         )
-        .from(
+        .fromTo(
           cutoutContainerRef.current,
-          {
-            scale: 0.92,
-            y: 40,
-            opacity: 0,
-            duration: 1.1,
-            ease: 'expo.out',
-          },
-          '-=0.9'
+          { scale: 0.94, y: 30, opacity: 0 },
+          { scale: 1, y: 0, opacity: 1, duration: 1.0, ease: 'expo.out' },
+          '-=0.8'
         );
 
-      // Subtle scroll parallax on the cutout and background glow
-      gsap.to(cutoutContainerRef.current, {
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1.2,
-        },
-        y: 80,
-        scale: 0.96,
-        ease: 'none',
-      });
+      // Subtle scroll parallax
+      if (cutoutContainerRef.current) {
+        gsap.to(cutoutContainerRef.current, {
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1.2,
+          },
+          y: 60,
+          scale: 0.97,
+          ease: 'none',
+        });
+      }
 
-      gsap.to(glowRef.current, {
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1.5,
-        },
-        scale: 1.3,
-        opacity: 0.3,
-        ease: 'none',
-      });
+      if (glowRef.current) {
+        gsap.to(glowRef.current, {
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 1.5,
+          },
+          scale: 1.25,
+          opacity: 0.4,
+          ease: 'none',
+        });
+      }
     },
     { scope: heroRef }
   );
@@ -137,10 +118,7 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
             </div>
 
             {/* Main Editorial Headline with Pill Word */}
-            <h1
-              ref={headlineRef}
-              className="display text-5xl sm:text-6xl md:text-7xl lg:text-[5.4rem] leading-[0.92] tracking-tight uppercase text-foreground mb-6"
-            >
+            <h1 className="display text-5xl sm:text-6xl md:text-7xl lg:text-[5.4rem] leading-[0.92] tracking-tight uppercase text-foreground mb-6">
               <span className="block hero-title-line title-gradient">
                 {lang === 'en' ? 'YOUR STYLE SHARPENED.' : 'SEU ESTILO BEM DEFINIDO.'}
               </span>
@@ -158,20 +136,17 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
             </h1>
 
             {/* Subtitle */}
-            <p
-              ref={textRef}
-              className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl mb-9 leading-relaxed font-normal"
-            >
+            <p className="hero-desc text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl mb-9 leading-relaxed font-normal">
               {lang === 'en'
                 ? 'Precision scissor tailoring, straight-razor hot towel sculpting, and absolute calendar punctuality. Choose your service and experience an unhurried chair.'
                 : 'Corte personalizado na tesoura, barba com toalha quente e atenção minuciosa aos detalhes. Escolha seu serviço e encontre o melhor horário para você.'}
             </p>
 
             {/* CTAs */}
-            <div ref={ctaRef} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-10">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-10">
               <button
                 onClick={onOpenBooking}
-                className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-[#FF8526] hover:scale-[1.02] active:scale-[0.98] transition-all glow-amber shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="hero-cta-btn inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-[#FF8526] hover:scale-[1.02] active:scale-[0.98] transition-all glow-amber shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <Calendar className="w-5 h-5" />
                 <span>{lang === 'en' ? 'Book an Appointment' : 'Agendar Meu Horário'}</span>
@@ -180,7 +155,7 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
 
               <a
                 href="#servicos"
-                className="inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-border hover:border-primary/80 bg-surface-raised/40 hover:bg-surface-raised text-foreground font-semibold text-base transition-all active:scale-[0.98] group"
+                className="hero-cta-btn inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-border hover:border-primary/80 bg-surface-raised/40 hover:bg-surface-raised text-foreground font-semibold text-base transition-all active:scale-[0.98] group"
               >
                 <span>{lang === 'en' ? 'Explore Services' : 'Conhecer os Serviços'}</span>
                 <span className="text-primary group-hover:translate-x-1 transition-transform">→</span>
@@ -188,19 +163,16 @@ export const Hero: React.FC<HeroProps> = ({ lang, onOpenBooking }) => {
             </div>
 
             {/* Trust Badges */}
-            <div
-              ref={badgesRef}
-              className="grid grid-cols-3 gap-4 pt-6 border-t border-border/60 max-w-lg text-xs sm:text-sm text-muted-foreground"
-            >
-              <div className="flex items-center gap-2">
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border/60 max-w-lg text-xs sm:text-sm text-muted-foreground">
+              <div className="hero-badge-item flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary shrink-0" />
                 <span>{lang === 'en' ? 'Zero Wait Time' : 'Sem Fila de Espera'}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="hero-badge-item flex items-center gap-2">
                 <Award className="w-4 h-4 text-primary shrink-0" />
                 <span>{lang === 'en' ? 'Master Barbers' : 'Barbeiros Mestres'}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="hero-badge-item flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                 <span>{lang === 'en' ? 'Simulated Demo' : 'Demo Verificada'}</span>
               </div>
