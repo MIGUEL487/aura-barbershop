@@ -40,17 +40,18 @@ export const Team: React.FC<TeamProps> = ({ onSelectBarber }) => {
       const cards = gsap.utils.toArray<HTMLElement>('.team-card');
       gsap.fromTo(
         cards,
-        { y: 50, opacity: 0 },
+        { y: 60, opacity: 0, scale: 0.96 },
         {
           scrollTrigger: {
             trigger: '.team-grid',
             start: 'top 85%',
-            once: true,
+            toggleActions: 'play none none reverse',
           },
           y: 0,
           opacity: 1,
+          scale: 1,
           stagger: 0.15,
-          duration: 0.8,
+          duration: 0.9,
           ease: 'power3.out',
         }
       );

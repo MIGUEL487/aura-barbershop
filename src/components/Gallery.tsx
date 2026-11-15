@@ -41,20 +41,42 @@ export const Gallery: React.FC<GalleryProps> = ({ onSelectService }) => {
       const cards = gsap.utils.toArray<HTMLElement>('.gallery-card');
       gsap.fromTo(
         cards,
-        { y: 40, opacity: 0 },
+        { y: 50, opacity: 0, scale: 0.97 },
         {
           scrollTrigger: {
             trigger: '.gallery-grid',
             start: 'top 85%',
-            once: true,
+            toggleActions: 'play none none reverse',
           },
           y: 0,
           opacity: 1,
-          stagger: 0.12,
+          scale: 1,
+          stagger: 0.1,
           duration: 0.8,
           ease: 'power3.out',
         }
       );
+
+      // Subtle parallax on gallery photos
+      cards.forEach((card) => {
+        const img = card.querySelector('img');
+        if (img) {
+          gsap.fromTo(
+            img,
+            { y: -15, scale: 1.08 },
+            {
+              scrollTrigger: {
+                trigger: card,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: 1.2,
+              },
+              y: 15,
+              ease: 'none',
+            }
+          );
+        }
+      });
     },
     { scope: containerRef }
   );

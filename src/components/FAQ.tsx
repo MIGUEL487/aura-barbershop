@@ -106,11 +106,17 @@ export const FAQ: React.FC<FAQProps> = () => {
                     </div>
                   </button>
 
-                  {isOpen && (
-                    <div className="px-6 pb-6 pt-1 text-sm sm:text-base text-muted-foreground leading-relaxed border-t border-border/40 animate-in fade-in duration-200">
-                      <p>{item.answer}</p>
+                  <div
+                    className={`grid transition-all duration-300 ease-out ${
+                      isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="px-6 pb-6 pt-1 text-sm sm:text-base text-muted-foreground leading-relaxed border-t border-border/40">
+                        <p>{item.answer}</p>
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })}

@@ -1,42 +1,43 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Calendar, ArrowRight, Scissors } from 'lucide-react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Ignore mobile URL bar expand/collapse resizes to prevent pin jumps
+// Prevent mobile URL bar expand/collapse resizes from causing pin jumps
 ScrollTrigger.config({ ignoreMobileResize: true });
 
 const TOTAL_FRAMES = 133;
 
 interface CinematicHeroProps {
-  onOpenBooking: () => void;
-  onHeroProgressChange?: (progress: number) => void;
+  onOpenBooking?: () => void;
+  onHeroComplete?: (completed: boolean) => void;
 }
 
 export const CinematicHero: React.FC<CinematicHeroProps> = ({
-  onOpenBooking,
-  onHeroProgressChange,
+  onHeroComplete,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const brandRevealRef = useRef<HTMLDivElement>(null);
-  const scrollIndicatorRef = useRef<HTMLDivElement>(null);
 
-  // Synchronously initialize device mode so mobile NEVER loads desktop frames
+  // Synchronously initialize device mode to strictly isolate mobile vs desktop sets
   const [isMobile, setIsMobile] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return window.innerWidth < 768;
   });
 
-  // Separate caches for desktop and mobile - strictly isolated, never mixed
+  // Strict separate image caches in memory (no DOM elements created per frame)
   const desktopImagesRef = useRef<(HTMLImageElement | null)[]>(new Array(TOTAL_FRAMES).fill(null));
   const mobileImagesRef = useRef<(HTMLImageElement | null)[]>(new Array(TOTAL_FRAMES).fill(null));
 
+  // Render tracking to throttle draws to display refresh and avoid redundant renders
   const currentRenderedIndexRef = useRef<number>(-1);
+  const requestedFrameRef = useRef<number>(0);
+  const rafIdRef = useRef<number | null>(null);
+  const isCompletedRef = useRef<boolean>(false);
 
   // Helper to format frame path
   const getFramePath = useCallback((idx: number, mobile: boolean) => {
@@ -45,7 +46,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     return `/moda_barbershop_hero/${folder}/frame_${numStr}.webp`;
   }, []);
 
-  // Monitor viewport size and orientation changes
+  // Monitor resize & orientation changes
   useEffect(() => {
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
@@ -60,75 +61,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     };
   }, []);
 
-  // Preloading system for current mode (desktop or mobile)
-  useEffect(() => {
-    let isCancelled = false;
-    const targetCache = isMobile ? mobileImagesRef.current : desktopImagesRef.current;
-
-    // 1. Load First Frame with immediate priority
-    if (!targetCache[0]) {
-      const firstImg = new Image();
-      firstImg.src = getFramePath(0, isMobile);
-      firstImg.onload = () => {
-        if (isCancelled) return;
-        targetCache[0] = firstImg;
-        drawFrame(currentRenderedIndexRef.current >= 0 ? currentRenderedIndexRef.current : 0);
-      };
-    } else {
-      drawFrame(currentRenderedIndexRef.current >= 0 ? currentRenderedIndexRef.current : 0);
-    }
-
-    // 2. Load Priority Initial Batch (frames 1–20)
-    for (let i = 1; i <= 20; i++) {
-      if (!targetCache[i]) {
-        const img = new Image();
-        img.src = getFramePath(i, isMobile);
-        img.onload = () => {
-          if (!isCancelled) {
-            targetCache[i] = img;
-          }
-        };
-      }
-    }
-
-    // 3. Progressively load the remaining frames in non-blocking batches
-    const loadRemaining = async () => {
-      const batchSize = 6;
-      for (let i = 21; i < TOTAL_FRAMES; i += batchSize) {
-        if (isCancelled) break;
-        await new Promise((r) => setTimeout(r, 30));
-
-        const batchPromises: Promise<void>[] = [];
-        for (let j = i; j < Math.min(i + batchSize, TOTAL_FRAMES); j++) {
-          if (!targetCache[j]) {
-            batchPromises.push(
-              new Promise((resolve) => {
-                const img = new Image();
-                img.src = getFramePath(j, isMobile);
-                img.onload = () => {
-                  if (!isCancelled) {
-                    targetCache[j] = img;
-                  }
-                  resolve();
-                };
-                img.onerror = () => resolve();
-              })
-            );
-          }
-        }
-        await Promise.all(batchPromises);
-      }
-    };
-
-    const timeout = setTimeout(loadRemaining, 150);
-
-    return () => {
-      isCancelled = true;
-      clearTimeout(timeout);
-    };
-  }, [isMobile, getFramePath]);
-
-  // Find closest loaded frame in the active cache to prevent blank flicker
+  // Find closest loaded frame in active cache to prevent blank flicker
   const getClosestLoadedFrame = useCallback(
     (target: number, mobile: boolean): HTMLImageElement | null => {
       const cache = mobile ? mobileImagesRef.current : desktopImagesRef.current;
@@ -137,7 +70,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         return targetImg;
       }
 
-      // Search closest loaded neighbor
+      // Search closest loaded neighbor (backward first, then forward)
       for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
         const prev = target - offset;
         if (prev >= 0 && cache[prev] && cache[prev]!.complete && cache[prev]!.naturalWidth > 0) {
@@ -153,12 +86,12 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     []
   );
 
-  // Exact contain logic without DPR duplication
-  const drawFrame = useCallback(
+  // Exact contain logic matching original frame ratio, centered with DPR compensation
+  const renderFrame = useCallback(
     (index: number) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { alpha: false });
       if (!ctx) return;
 
       const currentMobile = window.innerWidth < 768;
@@ -168,8 +101,8 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       const rect = canvas.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
 
-      // Adapt canvas to display size & Device Pixel Ratio
-      const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2.5));
+      // Limit devicePixelRatio to max 2 to prevent GPU memory saturation on high-density devices
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const targetWidth = Math.round(rect.width * dpr);
       const targetHeight = Math.round(rect.height * dpr);
 
@@ -181,29 +114,22 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       const imgWidth = img.naturalWidth;
       const imgHeight = img.naturalHeight;
 
-      // Official contain scale formula with proportional breathing room:
-      // Limits scale to 82% of height and 88% of width so the chrome dome and cylinder
-      // never touch or clip the viewport boundaries, floating with luxury editorial margins.
-      const maxH = canvas.height * 0.82;
-      const maxW = canvas.width * 0.88;
-
+      // Contain scaling logic: keeps the full pole completely visible without distortion
       const scale = Math.min(
-        maxW / imgWidth,
-        maxH / imgHeight
+        canvas.width / imgWidth,
+        canvas.height / imgHeight
       );
 
       const renderWidth = imgWidth * scale;
       const renderHeight = imgHeight * scale;
 
-      // Perfectly center horizontally and vertically
+      // Perfectly center on canvas
       const x = (canvas.width - renderWidth) / 2;
       const y = (canvas.height - renderHeight) / 2;
 
-      // Warm ivory background seamlessly matching original video frame background (#E9E8E4)
+      // Seamlessly fill canvas background matching frame background (#E9E8E4)
       ctx.fillStyle = '#E9E8E4';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw the frame without crop, distortion, or scale duplication
       ctx.drawImage(img, x, y, renderWidth, renderHeight);
 
       currentRenderedIndexRef.current = index;
@@ -211,10 +137,87 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     [getClosestLoadedFrame]
   );
 
+  // Throttled draw using requestAnimationFrame for smooth 60 FPS
+  const scheduleRender = useCallback(
+    (index: number) => {
+      requestedFrameRef.current = index;
+      if (rafIdRef.current === null) {
+        rafIdRef.current = requestAnimationFrame(() => {
+          rafIdRef.current = null;
+          renderFrame(requestedFrameRef.current);
+        });
+      }
+    },
+    [renderFrame]
+  );
+
+  // Non-blocking prioritized preloading with off-thread image decoding
+  useEffect(() => {
+    let isCancelled = false;
+    const targetCache = isMobile ? mobileImagesRef.current : desktopImagesRef.current;
+
+    const loadSingleImage = (idx: number): Promise<HTMLImageElement> => {
+      return new Promise((resolve) => {
+        if (targetCache[idx]) {
+          resolve(targetCache[idx]!);
+          return;
+        }
+        const img = new Image();
+        img.src = getFramePath(idx, isMobile);
+        img.onload = () => {
+          if (!isCancelled) targetCache[idx] = img;
+          resolve(img);
+        };
+        img.onerror = () => resolve(img);
+        if (typeof img.decode === 'function') {
+          img.decode().catch(() => {});
+        }
+      });
+    };
+
+    // 1. Immediately load frame 0 and render
+    loadSingleImage(0).then(() => {
+      if (!isCancelled) {
+        scheduleRender(currentRenderedIndexRef.current >= 0 ? currentRenderedIndexRef.current : 0);
+      }
+    });
+
+    // 2. Eagerly preload initial batch (frames 1–25)
+    for (let i = 1; i <= 25; i++) {
+      loadSingleImage(i);
+    }
+
+    // 3. Progressively load remaining frames in small batches
+    const loadRemaining = async () => {
+      const batchSize = 6;
+      for (let i = 26; i < TOTAL_FRAMES; i += batchSize) {
+        if (isCancelled) break;
+        await new Promise((r) => setTimeout(r, 25));
+
+        const batchPromises: Promise<HTMLImageElement>[] = [];
+        for (let j = i; j < Math.min(i + batchSize, TOTAL_FRAMES); j++) {
+          batchPromises.push(loadSingleImage(j));
+        }
+        await Promise.all(batchPromises);
+      }
+    };
+
+    const timeout = setTimeout(loadRemaining, 100);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeout);
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+  }, [isMobile, getFramePath, scheduleRender]);
+
   // Window resize & orientation redrawing
   useEffect(() => {
     const handleResizeRedraw = () => {
-      drawFrame(currentRenderedIndexRef.current >= 0 ? currentRenderedIndexRef.current : 0);
+      scheduleRender(currentRenderedIndexRef.current >= 0 ? currentRenderedIndexRef.current : 0);
       ScrollTrigger.refresh();
     };
 
@@ -224,7 +227,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       window.removeEventListener('resize', handleResizeRedraw);
       window.removeEventListener('orientationchange', handleResizeRedraw);
     };
-  }, [drawFrame]);
+  }, [scheduleRender]);
 
   // GSAP ScrollTrigger Sequence Setup
   useGSAP(
@@ -232,43 +235,41 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       if (prefersReducedMotion) {
-        drawFrame(TOTAL_FRAMES - 1);
-        if (overlayRef.current) overlayRef.current.style.opacity = '0.88';
+        scheduleRender(TOTAL_FRAMES - 1);
+        if (overlayRef.current) overlayRef.current.style.opacity = '1';
         if (brandRevealRef.current) {
           brandRevealRef.current.style.opacity = '1';
-          brandRevealRef.current.style.pointerEvents = 'auto';
+          brandRevealRef.current.style.transform = 'translateY(0px) scale(1)';
         }
-        if (onHeroProgressChange) onHeroProgressChange(1);
+        if (onHeroComplete) onHeroComplete(true);
         return;
       }
 
       const st = ScrollTrigger.create({
         trigger: containerRef.current,
         start: 'top top',
-        end: isMobile ? '+=380%' : '+=460%',
+        end: isMobile ? '+=360%' : '+=440%',
         pin: true,
         anticipatePin: 1,
         scrub: 0.8,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const progress = self.progress;
-          if (onHeroProgressChange) {
-            onHeroProgressChange(progress);
+
+          // Header appearance threshold - only notify when crossing the boundary
+          const isComplete = progress >= 1.0;
+          if (isComplete !== isCompletedRef.current) {
+            isCompletedRef.current = isComplete;
+            if (onHeroComplete) {
+              onHeroComplete(isComplete);
+            }
           }
 
-          // 1. Scroll Indicator fadeout (0.00 -> 0.05)
-          if (scrollIndicatorRef.current) {
-            const indOpacity = Math.max(0, 1 - progress * 20);
-            scrollIndicatorRef.current.style.opacity = String(indOpacity);
-            scrollIndicatorRef.current.style.pointerEvents = indOpacity <= 0 ? 'none' : 'auto';
-          }
-
-          // 2. Zone 1: Frame sequence playback (progress 0.00 -> 0.75)
-          // 133 frames distributed across 0.00 to 0.75
-          if (progress <= 0.75) {
-            const frameRatio = progress / 0.75;
+          // Phase 1: Frame sequence playback (progress 0.00 -> 0.70)
+          if (progress <= 0.70) {
+            const frameRatio = progress / 0.70;
             const targetFrame = Math.min(TOTAL_FRAMES - 1, Math.floor(frameRatio * TOTAL_FRAMES));
-            drawFrame(targetFrame);
+            scheduleRender(targetFrame);
 
             // Overlay & brand remain hidden during pole rotation
             if (overlayRef.current) {
@@ -276,26 +277,32 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
             }
             if (brandRevealRef.current) {
               brandRevealRef.current.style.opacity = '0';
-              brandRevealRef.current.style.pointerEvents = 'none';
-              brandRevealRef.current.style.transform = 'translateY(30px)';
+              brandRevealRef.current.style.transform = 'translateY(25px) scale(0.96)';
             }
           } else {
-            // Keep final frame (132) firmly pinned
-            drawFrame(TOTAL_FRAMES - 1);
+            // Keep final frame (132) firmly held on canvas
+            scheduleRender(TOTAL_FRAMES - 1);
 
-            // 3. Zone 2: Smooth darkening overlay & Brand typography reveal (progress 0.75 -> 0.90)
-            const revealProgress = Math.min(1, Math.max(0, (progress - 0.75) / 0.15));
-
+            // Phase 2: Smooth darkening espresso overlay (progress 0.70 -> 0.82)
+            const fadeProgress = Math.min(1, Math.max(0, (progress - 0.70) / 0.12));
             if (overlayRef.current) {
-              // Deep warm espresso vignette overlay fades from 0.0 to 0.88
-              overlayRef.current.style.opacity = String(revealProgress * 0.88);
+              overlayRef.current.style.opacity = String(fadeProgress);
             }
 
-            if (brandRevealRef.current) {
-              brandRevealRef.current.style.opacity = String(revealProgress);
-              brandRevealRef.current.style.pointerEvents = revealProgress > 0.6 ? 'auto' : 'none';
-              const yOffset = (1 - revealProgress) * 30;
-              brandRevealRef.current.style.transform = `translateY(${yOffset}px)`;
+            // Phase 3 & 4: Majestic MODA title reveal & hold buffer (progress 0.76 -> 1.00)
+            if (progress >= 0.76) {
+              const titleProgress = Math.min(1, Math.max(0, (progress - 0.76) / 0.14));
+              if (brandRevealRef.current) {
+                brandRevealRef.current.style.opacity = String(titleProgress);
+                const yOffset = (1 - titleProgress) * 25;
+                const scale = 0.96 + titleProgress * 0.04;
+                brandRevealRef.current.style.transform = `translateY(${yOffset}px) scale(${scale})`;
+              }
+            } else {
+              if (brandRevealRef.current) {
+                brandRevealRef.current.style.opacity = '0';
+                brandRevealRef.current.style.transform = 'translateY(25px) scale(0.96)';
+              }
             }
           }
         },
@@ -303,9 +310,13 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
 
       return () => {
         st.kill();
+        if (rafIdRef.current !== null) {
+          cancelAnimationFrame(rafIdRef.current);
+          rafIdRef.current = null;
+        }
       };
     },
-    { dependencies: [isMobile, drawFrame, onHeroProgressChange], scope: containerRef }
+    { dependencies: [isMobile, scheduleRender, onHeroComplete], scope: containerRef }
   );
 
   return (
@@ -315,95 +326,29 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#E9E8E4] select-none"
       style={{ overscrollBehaviorY: 'none' }}
     >
-      {/* 2D Canvas Frame Sequence - Pure block canvas taking 100% of container */}
+      {/* 2D Canvas Frame Sequence - Pure high-performance canvas with contain scaling */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full block pointer-events-none"
         aria-label="Moda Barbershop cinematic rotating pole sequence"
       />
 
-      {/* Darkening Warm Espresso & Charcoal Vignette Overlay (0.75 -> 0.90) */}
+      {/* Smooth Darkening Charcoal & Espresso Transition Overlay */}
       <div
         ref={overlayRef}
-        className="absolute inset-0 bg-gradient-to-b from-[#14100C]/75 via-[#100D0A]/90 to-[#0E0D0B] opacity-0 transition-opacity duration-300 pointer-events-none z-10"
+        className="absolute inset-0 bg-[#0E0D0B] opacity-0 pointer-events-none z-10"
+        style={{ willChange: 'opacity' }}
       />
 
-      {/* Subtle Hairline Frame Border */}
-      <div className="absolute inset-0 border border-border/20 pointer-events-none z-10" />
-
-      {/* Initial Scroll Prompt (Fades out when scrolling begins) */}
-      <div
-        ref={scrollIndicatorRef}
-        className="absolute bottom-6 inset-x-0 z-20 flex flex-col items-center justify-center text-center pointer-events-none transition-opacity duration-500"
-      >
-        <span className="text-[11px] font-mono tracking-widest text-[#241C15]/75 uppercase font-bold mb-1.5">
-          Scroll to explore craft
-        </span>
-        <div className="w-5 h-8 rounded-full border-2 border-[#241C15]/40 flex items-start justify-center p-1 shadow-sm bg-white/50 backdrop-blur-sm">
-          <div className="w-1.5 h-2 rounded-full bg-[#B89A5C] animate-bounce" />
-        </div>
-      </div>
-
-      {/* Brand Typography & Action Reveal in End-Zone (0.75 -> 1.00) */}
+      {/* Cinematic Brand Reveal — ONLY the majestic MODA title */}
       <div
         ref={brandRevealRef}
-        className="absolute inset-0 z-30 flex flex-col items-center justify-center px-6 sm:px-12 text-center opacity-0 pointer-events-none transition-all duration-300"
+        className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none opacity-0"
+        style={{ willChange: 'opacity, transform' }}
       >
-        <div className="max-w-3xl mx-auto flex flex-col items-center">
-          {/* Atelier Eyebrow Chip */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/40 bg-[#161310]/90 backdrop-blur-md mb-6 shadow-xl">
-            <Scissors className="w-3.5 h-3.5 text-primary -rotate-45" />
-            <span className="text-xs font-mono font-bold tracking-widest uppercase text-primary">
-              Moda Barbershop • Est. 2026
-            </span>
-          </div>
-
-          {/* Master Editorial Serif Headline */}
-          <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl tracking-tight uppercase text-foreground leading-[0.92] mb-5">
-            <span className="block drop-shadow-md">MODA</span>
-            <span className="block text-3xl sm:text-4xl md:text-5xl font-sans tracking-[0.2em] font-normal text-muted-foreground mt-2">
-              BARBERSHOP
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-primary/95 mb-6 max-w-xl">
-            Timeless Craft. Modern Ritual.
-          </p>
-
-          <p className="text-sm sm:text-base text-muted-foreground max-w-lg mb-9 leading-relaxed font-normal">
-            Bespoke scissor tailoring, straight-razor hot towel sculpting, and absolute calendar punctuality in a quiet, unhurried Pinheiros sanctuary.
-          </p>
-
-          {/* CTAs in Brushed Gold & Ivory Glass */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-            <button
-              onClick={onOpenBooking}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-primary text-primary-foreground font-bold text-base hover:bg-[#CDB173] active:scale-[0.98] transition-all glow-gold shadow-2xl"
-            >
-              <Calendar className="w-5 h-5 text-primary-foreground" />
-              <span>Book Appointment</span>
-              <ArrowRight className="w-4 h-4 text-primary-foreground" />
-            </button>
-
-            <a
-              href="#craft"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-border hover:border-primary/60 bg-[#181512]/80 hover:bg-[#201C18] text-foreground font-semibold text-base transition-all"
-            >
-              <span>Explore The Craft</span>
-              <span className="text-primary">↓</span>
-            </a>
-          </div>
-
-          {/* Metadata Ticker Row */}
-          <div className="flex items-center justify-center gap-6 sm:gap-10 mt-10 pt-6 border-t border-border/40 text-[11px] font-mono tracking-wider text-muted-foreground/80 uppercase">
-            <span>Pinheiros Atelier</span>
-            <span>•</span>
-            <span>Zero Wait Policy</span>
-            <span>•</span>
-            <span>Dedicated Chair</span>
-          </div>
-        </div>
+        <h1 className="font-serif text-7xl sm:text-9xl md:text-[11rem] lg:text-[13rem] font-bold tracking-[0.25em] uppercase text-[#F5F2EB] drop-shadow-[0_12px_45px_rgba(0,0,0,0.85)] select-none m-0 pl-[0.25em]">
+          MODA
+        </h1>
       </div>
     </section>
   );

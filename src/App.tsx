@@ -20,11 +20,12 @@ import { DemoModal } from './components/DemoModal';
 import { BookingState } from './types';
 
 gsap.registerPlugin(ScrollTrigger);
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 export function App() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  const [heroProgress, setHeroProgress] = useState(0);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(false);
 
   const [bookingState, setBookingState] = useState<BookingState>({
     step: 1,
@@ -43,6 +44,7 @@ export function App() {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mediaQuery.matches) {
       setReducedMotion(true);
+      setIsHeaderVisible(true);
     }
 
     if (reducedMotion) {
@@ -101,28 +103,28 @@ export function App() {
     scrollToBooking();
   };
 
-  // Header should only appear once the hero sequence reaches the end-zone (0.88+)
-  const isHeaderVisible = reducedMotion || heroProgress >= 0.88;
-
   return (
     <div className={`min-h-screen bg-background text-foreground ${reducedMotion ? 'reduced-motion' : ''}`}>
-      {/* 1. Header is hidden during frame sequence; fades in gracefully at the end-zone */}
-      <Header onOpenBooking={scrollToBooking} isVisible={isHeaderVisible} />
+      {/* 1. Header is invisible during the initial cinematic hero, and only slides in when hero completes */}
+      <Header
+        onOpenBooking={scrollToBooking}
+        isVisible={reducedMotion || isHeaderVisible}
+      />
 
       <main>
-        {/* 2. Cinematic Scroll-Driven Frame-by-Frame Hero */}
+        {/* 2. Cinematic Scroll-Driven Frame-by-Frame Hero (Only the pole and majestic MODA reveal) */}
         <CinematicHero
           onOpenBooking={scrollToBooking}
-          onHeroProgressChange={setHeroProgress}
+          onHeroComplete={(complete) => setIsHeaderVisible(complete)}
         />
 
         {/* 3. Top Infinite Marquee (Craft Track) */}
         <Marquee variant="craft" />
 
-        {/* 4. Storytelling Ritual in 3 Chapters (Cutouts & GSAP ScrollTrigger) */}
+        {/* 4. Storytelling Ritual in 3 Chapters (Understand, Execute, Refine) */}
         <Storytelling />
 
-        {/* 5. Services Menu (3 Cards with Cutouts & Staggered Entrance) */}
+        {/* 5. Services Menu (3 Cards with Staggered Entrance) */}
         <Services onSelectService={handleSelectServiceFromCard} />
 
         {/* 6. Style References Gallery (Haircut and texture focus) */}

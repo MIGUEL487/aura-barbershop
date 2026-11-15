@@ -46,17 +46,18 @@ export const Services: React.FC<ServicesProps> = ({ onSelectService }) => {
       const cards = gsap.utils.toArray<HTMLElement>('.service-card');
       gsap.fromTo(
         cards,
-        { y: 50, opacity: 0 },
+        { y: 50, opacity: 0, scale: 0.97 },
         {
           scrollTrigger: {
             trigger: '.services-grid',
             start: 'top 85%',
-            once: true,
+            toggleActions: 'play none none reverse',
           },
           y: 0,
           opacity: 1,
+          scale: 1,
           stagger: 0.15,
-          duration: 0.8,
+          duration: 0.85,
           ease: 'power3.out',
         }
       );

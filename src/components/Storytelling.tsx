@@ -2,42 +2,56 @@ import React, { useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Sparkles, Check, ChevronRight } from 'lucide-react';
+import { Sparkles, Check } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
-interface StorytellingProps {
-  lang?: string;
+interface StoryStep {
+  num: string;
+  tag: string;
+  badge: string;
+  title: string;
+  subtitle: string;
+  text: string;
+  image: string;
+  highlights: string[];
 }
 
-export const Storytelling: React.FC<StorytellingProps> = () => {
+export const Storytelling: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeStep, setActiveStep] = useState(0);
+  const pinnedContentRef = useRef<HTMLDivElement>(null);
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
 
-  const steps = [
+  const steps: StoryStep[] = [
     {
       num: '01',
       tag: 'Understand',
-      title: 'Before the shears, an intentional conversation.',
-      text: 'Your lifestyle, face geometry, and natural growth patterns guide the tailored blueprint before cutting.',
-      image: '/assets/cutouts/fade-cutout.png',
-      detail: 'Facial Anatomy & Texture Analysis',
+      badge: '01 • CONSULTATION & ANALYSIS',
+      title: 'The Intentional Consultation',
+      subtitle: 'Before the shears, an architectural dialogue.',
+      text: 'Your lifestyle, facial geometry, natural growth contours, and daily styling habits guide the bespoke blueprint before a single cut is made.',
+      image: '/assets/hero/set_b_barber-at-work.webp',
+      highlights: ['Facial Anatomy Analysis', 'Natural Growth Mapping', 'Bespoke Silhouette Plan'],
     },
     {
       num: '02',
       tag: 'Execute',
-      title: 'Millimeter precision in every pass.',
-      text: 'Sculpting seamless gradients, scissor weight dissipation, and clean classic transitions with steady razor craftsmanship.',
-      image: '/assets/cutouts/scissor-craft-cutout.png',
-      detail: 'Seamless Taper & Scissor Architecture',
+      badge: '02 • PRECISION & TECHNIQUE',
+      title: 'Millimeter Precision & Scissor Architecture',
+      subtitle: 'Handcrafted tapering and weight graduation.',
+      text: 'Sculpting seamless gradients, scissor weight dissipation, and clean classic transitions with steady Japanese steel shears and master clippers.',
+      image: '/assets/process/set_a_precision-fade.webp',
+      highlights: ['Seamless Taper & Fade Architecture', 'Scissor Weight Graduation', 'Micro-metric Edge Alignment'],
     },
     {
       num: '03',
       tag: 'Refine',
-      title: 'The hot towel detail elevates the whole.',
-      text: 'Steamed herbal towel relaxation, straight razor perimeter cleanup, and styling guidance to maintain the silhouette.',
-      image: '/assets/cutouts/hot-towel-cutout.png',
-      detail: 'Herbal Steam & Straight Razor Polish',
+      badge: '03 • RITUALISTIC FINISH',
+      title: 'The Steamed Towel & Straight-Razor Polish',
+      subtitle: 'The ceremonial climax of unhurried grooming.',
+      text: 'Essential herbal steam softens the dermal perimeter before an artisan straight-razor cleanup, followed by soothing cold stone finish and styling.',
+      image: '/assets/process/set_a_hot-towel.webp',
+      highlights: ['Herbal Steam Infusion', 'Straight-Razor Perimeter Polish', 'Cold Stone Scalp Soothing'],
     },
   ];
 
@@ -46,142 +60,246 @@ export const Storytelling: React.FC<StorytellingProps> = () => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReducedMotion) return;
 
-      // Section header reveal
-      gsap.from('.story-header', {
+      const isDesktop = window.innerWidth >= 1024;
+      if (!isDesktop) {
+        // Mobile / Tablet: Smooth staggered entrance for vertical cards
+        gsap.from('.mobile-story-card', {
+          scrollTrigger: {
+            trigger: '.mobile-story-list',
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+          y: 40,
+          opacity: 0,
+          stagger: 0.2,
+          duration: 0.8,
+          ease: 'power3.out',
+        });
+        return;
+      }
+
+      // Desktop: Pinned 3-step timeline
+      const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: '.story-header',
-          start: 'top 85%',
-          toggleActions: 'play none none reverse',
+          trigger: containerRef.current,
+          start: 'top top',
+          end: '+=200%',
+          pin: true,
+          scrub: 0.6,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            const p = self.progress;
+            if (p < 0.35) {
+              setActiveStepIndex(0);
+            } else if (p < 0.70) {
+              setActiveStepIndex(1);
+            } else {
+              setActiveStepIndex(2);
+            }
+          },
         },
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
       });
 
-      // Cards stagger animation with ScrollTrigger
-      const cards = gsap.utils.toArray<HTMLElement>('.story-step-card');
-      gsap.from(cards, {
-        scrollTrigger: {
-          trigger: '.story-cards-grid',
-          start: 'top 80%',
-          toggleActions: 'play none none reverse',
-        },
-        y: 60,
-        opacity: 0,
-        stagger: 0.18,
-        duration: 0.9,
-        ease: 'power3.out',
-      });
+      // Initial state: Step 0 visible, Steps 1 and 2 hidden
+      gsap.set(['.story-img-1', '.story-img-2'], { opacity: 0, scale: 1.05 });
+      gsap.set('.story-img-0', { opacity: 1, scale: 1 });
+      gsap.set(['.story-text-1', '.story-text-2'], { opacity: 0, y: 25, pointerEvents: 'none' });
+      gsap.set('.story-text-0', { opacity: 1, y: 0, pointerEvents: 'auto' });
 
-      // Subtle parallax on cutouts inside cards
-      cards.forEach((card) => {
-        const img = card.querySelector('.story-cutout-img');
-        if (img) {
-          gsap.to(img, {
-            scrollTrigger: {
-              trigger: card,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: 1.2,
-            },
-            y: -15,
-            ease: 'none',
-          });
-        }
-      });
+      // Step 0 hold -> Transition to Step 1
+      tl.to({}, { duration: 1 })
+        .to('.story-img-0', { opacity: 0, scale: 0.98, duration: 1, ease: 'power2.inOut' }, 'step1')
+        .to('.story-img-1', { opacity: 1, scale: 1, duration: 1, ease: 'power2.inOut' }, 'step1')
+        .to('.story-text-0', { opacity: 0, y: -20, pointerEvents: 'none', duration: 0.6, ease: 'power2.in' }, 'step1')
+        .to('.story-text-1', { opacity: 1, y: 0, pointerEvents: 'auto', duration: 0.8, ease: 'power2.out' }, 'step1+=0.3')
+        // Step 1 hold -> Transition to Step 2
+        .to({}, { duration: 1 })
+        .to('.story-img-1', { opacity: 0, scale: 0.98, duration: 1, ease: 'power2.inOut' }, 'step2')
+        .to('.story-img-2', { opacity: 1, scale: 1, duration: 1, ease: 'power2.inOut' }, 'step2')
+        .to('.story-text-1', { opacity: 0, y: -20, pointerEvents: 'none', duration: 0.6, ease: 'power2.in' }, 'step2')
+        .to('.story-text-2', { opacity: 1, y: 0, pointerEvents: 'auto', duration: 0.8, ease: 'power2.out' }, 'step2+=0.3')
+        // Step 2 hold
+        .to({}, { duration: 1 });
     },
     { scope: containerRef }
   );
 
   return (
-    <section id="craft" ref={containerRef} className="section-y relative bg-[#0E0D0B] border-t border-border">
-      <div className="container-x">
-        {/* Section Header with Pill Word */}
-        <div className="story-header max-w-3xl mb-16">
-          <div className="eyebrow mb-4">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span>The Moda Methodology</span>
+    <section
+      id="craft"
+      ref={containerRef}
+      className="relative bg-[#0E0D0B] border-t border-border overflow-hidden select-none"
+    >
+      {/* Desktop View: Pinned Editorial Showcase */}
+      <div
+        ref={pinnedContentRef}
+        className="hidden lg:flex min-h-screen w-full flex-col justify-center py-16"
+      >
+        <div className="container-x w-full">
+          {/* Section Header */}
+          <div className="max-w-3xl mb-12">
+            <div className="eyebrow mb-3">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>The Moda Methodology</span>
+            </div>
+            <h2 className="display text-4xl sm:text-5xl md:text-6xl text-foreground uppercase tracking-tight mb-3">
+              THE CRAFT IS IN THE <span className="pill-word">DETAILS.</span>
+            </h2>
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Three deliberate chapters designed to respect your schedule, listen to your desires, and deliver absolute confidence.
+            </p>
           </div>
-          <h2 className="display text-4xl sm:text-5xl md:text-6xl text-foreground uppercase tracking-tight mb-5">
-            THE CRAFT IS IN THE <span className="pill-word">DETAILS.</span>
-          </h2>
-          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-            Three deliberate chapters designed to respect your schedule, listen to your desires, and leave you feeling sharp and revitalized.
-          </p>
-        </div>
 
-        {/* Desktop Interactive Progress Steps */}
-        <div className="hidden md:grid grid-cols-3 gap-6 mb-12">
-          {steps.map((st, i) => (
-            <button
-              key={st.num}
-              onClick={() => setActiveStep(i)}
-              className={`p-4 rounded-2xl border transition-all text-left flex items-start justify-between ${
-                activeStep === i
-                  ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10'
-                  : 'border-border bg-card hover:border-primary/40'
-              }`}
-            >
-              <div>
-                <span className="text-xs font-mono uppercase tracking-wider text-primary font-bold">
-                  {st.num} / {st.tag}
-                </span>
-                <p className="font-semibold text-sm mt-1 text-foreground">{st.detail}</p>
-              </div>
+          {/* Interactive Navigation Track */}
+          <div className="grid grid-cols-3 gap-5 mb-10 max-w-4xl">
+            {steps.map((st, i) => (
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors ${
-                  activeStep === i ? 'bg-primary text-primary-foreground font-bold' : 'bg-surface-raised text-muted-foreground'
+                key={st.num}
+                className={`p-3.5 rounded-2xl border transition-all duration-300 flex items-center justify-between ${
+                  activeStepIndex === i
+                    ? 'border-primary bg-primary/10 shadow-lg shadow-primary/10'
+                    : 'border-border/60 bg-card/60 opacity-60'
                 }`}
               >
-                {activeStep > i ? <Check className="w-3.5 h-3.5" /> : i + 1}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* 3 Story Steps Cards Grid */}
-        <div className="story-cards-grid grid grid-cols-1 md:grid-cols-3 gap-8">
-          {steps.map((step) => (
-            <div
-              key={step.num}
-              className="story-step-card flex flex-col rounded-3xl border border-border bg-card overflow-hidden group hover:border-primary/60 transition-all duration-500 shadow-xl"
-            >
-              {/* Step Cutout Stage with Warm Vignette Backplate */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-[#181614] to-[#100F0D] flex items-center justify-center p-4">
-                {/* Background radial highlight */}
-                <div className="absolute inset-0 bg-radial-gradient from-primary/15 via-transparent to-transparent opacity-80" />
-
-                <img
-                  src={step.image}
-                  alt={step.title}
-                  className="story-cutout-img max-h-[85%] max-w-[90%] object-contain cutout-shadow group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-
-                <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-background/85 backdrop-blur-md border border-border text-xs font-mono font-bold text-primary">
-                  {step.num} • {step.tag.toUpperCase()}
-                </div>
-              </div>
-
-              {/* Step Content */}
-              <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="display text-2xl text-foreground mb-3 leading-tight uppercase group-hover:text-primary transition-colors">
-                    {step.title}
-                  </h3>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-6 font-normal">
-                    {step.text}
-                  </p>
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-primary font-bold">
+                    {st.num} / {st.tag}
+                  </span>
+                  <p className="font-semibold text-xs mt-0.5 text-foreground">{st.title}</p>
                 </div>
+                <div
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition-colors ${
+                    activeStepIndex === i
+                      ? 'bg-primary text-primary-foreground font-bold'
+                      : 'bg-surface-raised text-muted-foreground'
+                  }`}
+                >
+                  {activeStepIndex > i ? <Check className="w-3.5 h-3.5" /> : i + 1}
+                </div>
+              </div>
+            ))}
+          </div>
 
-                <div className="pt-4 border-t border-border flex items-center justify-between text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
-                  <span>{step.detail}</span>
-                  <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
+          {/* 2-Column Synchronized Showcase */}
+          <div className="grid grid-cols-12 gap-10 items-center">
+            {/* Left Column: Dynamic Step Narrative Layers */}
+            <div className="col-span-5 relative min-h-[300px]">
+              {steps.map((st, i) => (
+                <div
+                  key={st.num}
+                  className={`story-text-${i} absolute inset-0 flex flex-col justify-center transition-all duration-300`}
+                >
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-raised border border-border text-xs font-mono font-bold text-primary mb-4 w-fit">
+                    {st.badge}
+                  </div>
+                  <h3 className="display text-3xl xl:text-4xl text-foreground mb-3 leading-tight uppercase">
+                    {st.title}
+                  </h3>
+                  <p className="text-base text-primary/95 italic font-serif mb-4">
+                    {st.subtitle}
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+                    {st.text}
+                  </p>
+                  <div className="space-y-2 pt-4 border-t border-border/60">
+                    {st.highlights.map((item) => (
+                      <div key={item} className="flex items-center gap-2 text-xs font-medium text-foreground/80">
+                        <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Column: Heroic Editorial Image Stage */}
+            <div className="col-span-7">
+              <div className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-border bg-[#141210] shadow-2xl">
+                {/* Ambient warm radial glow */}
+                <div className="absolute inset-0 bg-radial-gradient from-primary/20 via-transparent to-transparent opacity-75 z-10 pointer-events-none" />
+
+                {/* Layered Crossfading Photos */}
+                {steps.map((st, i) => (
+                  <img
+                    key={st.num}
+                    src={st.image}
+                    alt={st.title}
+                    className={`story-img-${i} absolute inset-0 w-full h-full object-cover transition-transform duration-700`}
+                    loading="lazy"
+                  />
+                ))}
+
+                {/* Subtle Edge Vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0E0D0B]/80 via-transparent to-[#0E0D0B]/40 pointer-events-none z-10" />
+
+                {/* Dynamic Step Watermark Tag */}
+                <div className="absolute bottom-4 right-4 z-20 px-3.5 py-1.5 rounded-full bg-[#0E0D0B]/85 backdrop-blur-md border border-border text-xs font-mono font-bold text-primary tracking-wider uppercase">
+                  {steps[activeStepIndex].badge}
                 </div>
               </div>
             </div>
-          ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile & Tablet View: Clean Vertical Flow (No Pinning, No Overlapping) */}
+      <div className="lg:hidden py-16">
+        <div className="container-x">
+          <div className="max-w-2xl mb-12">
+            <div className="eyebrow mb-3">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>The Moda Methodology</span>
+            </div>
+            <h2 className="display text-3xl sm:text-4xl text-foreground uppercase tracking-tight mb-3">
+              THE CRAFT IS IN THE <span className="pill-word">DETAILS.</span>
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              Three deliberate chapters designed to respect your schedule, listen to your desires, and deliver absolute confidence.
+            </p>
+          </div>
+
+          <div className="mobile-story-list space-y-8">
+            {steps.map((st) => (
+              <div
+                key={st.num}
+                className="mobile-story-card rounded-3xl border border-border bg-card overflow-hidden shadow-xl"
+              >
+                <div className="relative aspect-[16/10] overflow-hidden bg-[#141210]">
+                  <img
+                    src={st.image}
+                    alt={st.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[#0E0D0B]/85 backdrop-blur-md border border-border text-xs font-mono font-bold text-primary">
+                    {st.badge}
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <h3 className="display text-2xl text-foreground mb-2 leading-tight uppercase">
+                    {st.title}
+                  </h3>
+                  <p className="text-sm text-primary/95 italic font-serif mb-3">
+                    {st.subtitle}
+                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+                    {st.text}
+                  </p>
+                  <div className="space-y-2 pt-4 border-t border-border">
+                    {st.highlights.map((item) => (
+                      <div key={item} className="flex items-center gap-2 text-xs font-medium text-foreground/80">
+                        <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
