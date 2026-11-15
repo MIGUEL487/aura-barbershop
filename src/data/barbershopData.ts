@@ -102,7 +102,7 @@ export const TESTIMONIALS: Testimonial[] = [
   {
     id: 't1',
     quote: 'Being able to discuss my styling habits and hair texture before the shears were raised made all the difference. The shape holds effortlessly for weeks.',
-    author: 'André M.',
+    author: 'Andre M.',
     role: 'Bi-Weekly Client (Verified)',
     initials: 'AM',
   },
