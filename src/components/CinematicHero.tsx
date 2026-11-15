@@ -178,14 +178,18 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         canvas.height = targetHeight;
       }
 
-      // Official contain scale formula in canvas pixel space:
-      // scale = min(canvas.width / image.width, canvas.height / image.height)
       const imgWidth = img.naturalWidth;
       const imgHeight = img.naturalHeight;
 
+      // Official contain scale formula with proportional breathing room:
+      // Limits scale to 82% of height and 88% of width so the chrome dome and cylinder
+      // never touch or clip the viewport boundaries, floating with luxury editorial margins.
+      const maxH = canvas.height * 0.82;
+      const maxW = canvas.width * 0.88;
+
       const scale = Math.min(
-        canvas.width / imgWidth,
-        canvas.height / imgHeight
+        maxW / imgWidth,
+        maxH / imgHeight
       );
 
       const renderWidth = imgWidth * scale;
@@ -195,8 +199,8 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       const x = (canvas.width - renderWidth) / 2;
       const y = (canvas.height - renderHeight) / 2;
 
-      // White background seamlessly matching original video frame background
-      ctx.fillStyle = '#FFFFFF';
+      // Warm ivory background seamlessly matching original video frame background (#E9E8E4)
+      ctx.fillStyle = '#E9E8E4';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Draw the frame without crop, distortion, or scale duplication
@@ -308,7 +312,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     <section
       id="top"
       ref={containerRef}
-      className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-white select-none"
+      className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#E9E8E4] select-none"
       style={{ overscrollBehaviorY: 'none' }}
     >
       {/* 2D Canvas Frame Sequence - Pure block canvas taking 100% of container */}
@@ -330,12 +334,12 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       {/* Initial Scroll Prompt (Fades out when scrolling begins) */}
       <div
         ref={scrollIndicatorRef}
-        className="absolute bottom-8 inset-x-0 z-20 flex flex-col items-center justify-center text-center pointer-events-none transition-opacity duration-500"
+        className="absolute bottom-6 inset-x-0 z-20 flex flex-col items-center justify-center text-center pointer-events-none transition-opacity duration-500"
       >
-        <span className="text-[11px] font-mono tracking-widest text-[#241C15]/70 uppercase font-bold mb-2">
+        <span className="text-[11px] font-mono tracking-widest text-[#241C15]/75 uppercase font-bold mb-1.5">
           Scroll to explore craft
         </span>
-        <div className="w-6 h-9 rounded-full border-2 border-[#241C15]/40 flex items-start justify-center p-1 shadow-sm bg-white/40 backdrop-blur-sm">
+        <div className="w-5 h-8 rounded-full border-2 border-[#241C15]/40 flex items-start justify-center p-1 shadow-sm bg-white/50 backdrop-blur-sm">
           <div className="w-1.5 h-2 rounded-full bg-[#B89A5C] animate-bounce" />
         </div>
       </div>
