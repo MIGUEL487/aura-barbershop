@@ -4,17 +4,17 @@
 
 :root {
   --radius: 0.75rem;
-  --background: #0B0A09;
-  --foreground: #F5F4F0;
-  --card: #131210;
-  --card-foreground: #F5F4F0;
-  --surface-raised: #1A1916;
-  --primary: #C5A059;
-  --primary-foreground: #0B0A09;
-  --primary-deep: #967432;
-  --muted: #1E1D19;
-  --muted-foreground: #9E9A90;
-  --border: rgba(245, 244, 240, 0.1);
+  --background: #0E0D0B;
+  --foreground: #F5F2EB;
+  --card: #151311;
+  --card-foreground: #F5F2EB;
+  --surface-raised: #1C1916;
+  --primary: #B89A5C;
+  --primary-foreground: #0E0D0B;
+  --primary-deep: #8A713E;
+  --muted: #221E1A;
+  --muted-foreground: #9E988D;
+  --border: rgba(245, 242, 235, 0.1);
 }
 
 @layer base {
@@ -98,27 +98,31 @@
   }
 
   .display {
-    font-family: 'Anton', Impact, sans-serif;
+    font-family: 'Cormorant Garamond', 'Anton', Georgia, serif;
     letter-spacing: -0.01em;
     text-transform: uppercase;
   }
 
+  .serif-heading {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
   .pirata {
-    font-family: 'Pirata One', 'Anton', serif;
+    font-family: 'Cormorant Garamond', 'Pirata One', serif;
   }
 
   .tnum {
     font-variant-numeric: tabular-nums;
   }
 
-  /* Aesthetic pill words in burnished gold */
+  /* Aesthetic pill words in brushed gold */
   .pill-word {
     display: inline-block;
     padding: 0.08em 0.38em;
     border-radius: 9999px;
-    border: 1.5px solid #C5A059;
-    color: #C5A059;
-    box-shadow: 0 0 25px -4px rgba(197, 160, 89, 0.35);
+    border: 1.5px solid #B89A5C;
+    color: #B89A5C;
+    box-shadow: 0 0 25px -4px rgba(184, 154, 92, 0.35);
     letter-spacing: -0.01em;
     margin: 0 0.08em;
   }
@@ -133,9 +137,9 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    background-color: rgba(197, 160, 89, 0.08);
-    color: #C5A059;
-    border: 1px solid rgba(197, 160, 89, 0.28);
+    background-color: rgba(184, 154, 92, 0.08);
+    color: #B89A5C;
+    border: 1px solid rgba(184, 154, 92, 0.28);
     backdrop-filter: blur(8px);
   }
 
@@ -147,7 +151,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    color: #C5A059;
+    color: #B89A5C;
   }
 
   .title-gradient {
@@ -157,22 +161,22 @@
   }
 
   .gold-gradient {
-    background: linear-gradient(180deg, #F3E5C2 0%, #C5A059 55%, #967432 100%);
+    background: linear-gradient(180deg, #F3E5C2 0%, #B89A5C 55%, #8A713E 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
   /* Refined glows and depth */
   .glow-gold {
-    box-shadow: 0 10px 40px -10px rgba(197, 160, 89, 0.35);
+    box-shadow: 0 10px 40px -10px rgba(184, 154, 92, 0.35);
   }
 
   .glow-card {
-    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.9), 0 0 40px -15px rgba(197, 160, 89, 0.08);
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.9), 0 0 40px -15px rgba(184, 154, 92, 0.08);
   }
 
   .cutout-shadow {
-    filter: drop-shadow(0 25px 40px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 50px rgba(197, 160, 89, 0.12));
+    filter: drop-shadow(0 25px 40px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 50px rgba(184, 154, 92, 0.12));
   }
 
   /* Subtle background grain & coordinates */

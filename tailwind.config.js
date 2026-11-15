@@ -7,41 +7,42 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0B0A09',
-        foreground: '#F5F4F0',
+        background: '#0E0D0B',
+        foreground: '#F5F2EB',
         card: {
-          DEFAULT: '#131210',
-          foreground: '#F5F4F0',
+          DEFAULT: '#151311',
+          foreground: '#F5F2EB',
         },
         surface: {
-          raised: '#1A1916',
+          raised: '#1C1916',
         },
         primary: {
-          DEFAULT: '#C5A059',
-          foreground: '#0B0A09',
-          hover: '#D4AF6A',
-          deep: '#967432',
+          DEFAULT: '#B89A5C',
+          foreground: '#0E0D0B',
+          hover: '#CDB173',
+          deep: '#8A713E',
         },
         secondary: {
-          DEFAULT: '#1A1916',
-          foreground: '#F5F4F0',
+          DEFAULT: '#1C1916',
+          foreground: '#F5F2EB',
         },
         muted: {
-          DEFAULT: '#1E1D19',
-          foreground: '#9E9A90',
+          DEFAULT: '#221E1A',
+          foreground: '#9E988D',
         },
         accent: {
-          DEFAULT: '#C5A059',
-          foreground: '#0B0A09',
+          DEFAULT: '#D8C6A5',
+          foreground: '#0E0D0B',
         },
-        border: 'rgba(245, 244, 240, 0.1)',
-        input: 'rgba(245, 244, 240, 0.16)',
-        ring: '#C5A059',
+        border: 'rgba(245, 242, 235, 0.1)',
+        input: 'rgba(245, 242, 235, 0.16)',
+        ring: '#B89A5C',
       },
       fontFamily: {
         sans: ['Archivo', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Anton', 'Impact', 'sans-serif'],
-        pirata: ['"Pirata One"', 'Anton', 'serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        display: ['"Cormorant Garamond"', 'Anton', 'Georgia', 'serif'],
+        pirata: ['"Pirata One"', 'serif'],
       },
       borderRadius: {
         DEFAULT: '0.75rem',

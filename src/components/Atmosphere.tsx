@@ -76,7 +76,7 @@ export const Atmosphere: React.FC<AtmosphereProps> = () => {
               <div className="aspect-[16/10] overflow-hidden">
                 <img
                   src="/assets/interior/set_a_barbershop-atmosphere.webp"
-                  alt="Aura barbershop interior ambiance with vintage chairs and warm acoustics"
+                  alt="Moda barbershop interior ambiance with vintage chairs and warm acoustics"
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
                 />

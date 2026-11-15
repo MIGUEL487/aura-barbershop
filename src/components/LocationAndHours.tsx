@@ -53,7 +53,7 @@ export const LocationAndHours: React.FC<LocationAndHoursProps> = ({ onOpenBookin
                     <MapPin className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-foreground text-base">Aura Barbershop Studio</h4>
+                    <h4 className="font-bold text-foreground text-base">Moda Barbershop Studio</h4>
                     <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
                       Rua dos Pinheiros • 200m from Fradique Coutinho Metro Station
                     </p>

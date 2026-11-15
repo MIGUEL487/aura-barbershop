@@ -3,9 +3,10 @@ import { Menu, X, Scissors, Calendar } from 'lucide-react';
 
 interface HeaderProps {
   onOpenBooking: () => void;
+  isVisible?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenBooking, isVisible = true }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -26,21 +27,27 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
   ];
 
   return (
-    <>
+    <div
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 transform ${
+        isVisible
+          ? 'opacity-100 translate-y-0 pointer-events-auto'
+          : 'opacity-0 -translate-y-full pointer-events-none'
+      }`}
+    >
       {/* Top Demo Disclaimer Banner */}
-      <div className="w-full bg-[#12110F] border-b border-border/40 py-2 px-4 text-center">
+      <div className="w-full bg-[#14110E] border-b border-border/40 py-1.5 px-4 text-center">
         <p className="text-[11px] sm:text-xs text-muted-foreground font-medium tracking-wider uppercase flex items-center justify-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span>Editorial Prototype • Simulated Appointments • Pinheiros, São Paulo</span>
+          <span>Moda Barbershop • High-Fidelity Prototype • Pinheiros Sanctuary</span>
         </p>
       </div>
 
       {/* Main Sticky Header */}
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
+        className={`w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-background/90 backdrop-blur-md border-b border-border shadow-lg shadow-black/50 py-3.5'
-            : 'bg-transparent py-5'
+            ? 'bg-[#0E0D0B]/92 backdrop-blur-md border-b border-border shadow-2xl py-3.5'
+            : 'bg-[#0E0D0B]/80 backdrop-blur-sm border-b border-border/50 py-4'
         }`}
       >
         <div className="container-x flex items-center justify-between gap-4">
@@ -52,9 +59,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
             <div className="w-9 h-9 rounded-xl bg-surface-raised border border-border flex items-center justify-center text-primary group-hover:border-primary transition-colors shadow-sm">
               <Scissors className="w-4 h-4 -rotate-45" />
             </div>
-            <div className="flex flex-col">
-              <span className="pirata text-2xl md:text-3xl tracking-tight leading-none text-foreground group-hover:text-primary transition-colors">
-                Aura Barbershop
+            <div className="flex flex-col text-left">
+              <span className="font-serif text-2xl md:text-3xl tracking-tight leading-none text-foreground group-hover:text-primary transition-colors">
+                Moda Barbershop
               </span>
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
                 Pinheiros • São Paulo
@@ -77,10 +84,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
 
           {/* Actions: Booking CTA & Mobile Toggle */}
           <div className="flex items-center gap-3">
-            {/* Desktop CTA in Burnished Gold */}
+            {/* Desktop CTA in Brushed Gold */}
             <button
               onClick={onOpenBooking}
-              className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-[#D4AF6A] active:scale-[0.98] transition-all glow-gold shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-[#CDB173] active:scale-[0.98] transition-all glow-gold shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Calendar className="w-4 h-4" />
               <span>Book Appointment</span>
@@ -98,38 +105,32 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[calc(100%+1px)] bg-background/95 backdrop-blur-xl border-b border-border shadow-2xl px-6 py-8 flex flex-col gap-6 animate-in slide-in-from-top-4 duration-200">
-            <div className="flex flex-col gap-4 divide-y divide-border/50 text-base font-medium">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="pt-3 first:pt-0 text-foreground hover:text-primary transition-colors flex items-center justify-between"
-                >
-                  <span>{link.label}</span>
-                  <span className="text-xs text-muted-foreground font-mono">→</span>
-                </a>
-              ))}
-            </div>
-
-            <div className="pt-4 border-t border-border flex flex-col gap-3">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onOpenBooking();
-                }}
-                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-base shadow-lg glow-gold"
+          <div className="lg:hidden border-t border-border mt-3 py-4 px-6 bg-[#13110E] flex flex-col gap-4">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-base text-foreground hover:text-primary py-2 font-medium"
               >
-                <Calendar className="w-5 h-5" />
-                <span>Book Appointment</span>
-              </button>
-            </div>
+                {link.label}
+              </a>
+            ))}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenBooking();
+              }}
+              className="w-full inline-flex items-center justify-center gap-2 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Book Appointment</span>
+            </button>
           </div>
         )}
       </header>
-    </>
+    </div>
   );
 };

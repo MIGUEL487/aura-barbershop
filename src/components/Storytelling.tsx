@@ -101,7 +101,7 @@ export const Storytelling: React.FC<StorytellingProps> = () => {
         <div className="story-header max-w-3xl mb-16">
           <div className="eyebrow mb-4">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span>The Aura Methodology</span>
+            <span>The Moda Methodology</span>
           </div>
           <h2 className="display text-4xl sm:text-5xl md:text-6xl text-foreground uppercase tracking-tight mb-5">
             THE CRAFT IS IN THE <span className="pill-word">DETAILS.</span>

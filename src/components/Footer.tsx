@@ -24,7 +24,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <Scissors className="w-5 h-5 -rotate-45" />
               </div>
               <span className="pirata text-3xl tracking-tight text-foreground group-hover:text-primary transition-colors">
-                Aura Barbershop
+                Moda Barbershop
               </span>
             </a>
 
@@ -119,10 +119,10 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Bottom Legal Notice */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>
-            Aura Barbershop is an editorial prototype designed for design & technical demonstration. All portraits and profiles are illustrative. No actual payment or booking is transacted.
+            Moda Barbershop is an editorial prototype designed for design & technical demonstration. All portraits and profiles are illustrative. No actual payment or booking is transacted.
           </p>
 
-          <span className="font-mono shrink-0">© 2026 Aura Barbershop</span>
+          <span className="font-mono shrink-0">© 2026 Moda Barbershop</span>
         </div>
       </div>
     </footer>

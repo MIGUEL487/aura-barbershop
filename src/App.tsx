@@ -3,7 +3,7 @@ import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Header } from './components/Header';
-import { Hero } from './components/Hero';
+import { CinematicHero } from './components/CinematicHero';
 import { Marquee } from './components/Marquee';
 import { Storytelling } from './components/Storytelling';
 import { Services } from './components/Services';
@@ -24,6 +24,7 @@ gsap.registerPlugin(ScrollTrigger);
 export function App() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [heroProgress, setHeroProgress] = useState(0);
 
   const [bookingState, setBookingState] = useState<BookingState>({
     step: 1,
@@ -100,14 +101,20 @@ export function App() {
     scrollToBooking();
   };
 
+  // Header should only appear once the hero sequence reaches the end-zone (0.90+)
+  const isHeaderVisible = reducedMotion || heroProgress >= 0.90;
+
   return (
     <div className={`min-h-screen bg-background text-foreground ${reducedMotion ? 'reduced-motion' : ''}`}>
-      {/* 1. Sticky Navigation Header */}
-      <Header onOpenBooking={scrollToBooking} />
+      {/* 1. Header is hidden during frame sequence; fades in gracefully at the end-zone */}
+      <Header onOpenBooking={scrollToBooking} isVisible={isHeaderVisible} />
 
       <main>
-        {/* 2. Pure Editorial Hero (Unboxed floating cutout, burnished gold accents, GSAP parallax) */}
-        <Hero onOpenBooking={scrollToBooking} />
+        {/* 2. Cinematic Scroll-Driven Frame-by-Frame Hero */}
+        <CinematicHero
+          onOpenBooking={scrollToBooking}
+          onHeroProgressChange={setHeroProgress}
+        />
 
         {/* 3. Top Infinite Marquee (Craft Track) */}
         <Marquee variant="craft" />
@@ -145,7 +152,7 @@ export function App() {
         {/* 13. Accessible FAQ Accordion */}
         <FAQ />
 
-        {/* 14. High-Impact Closing CTA (Obsidian & Burnished Gold) */}
+        {/* 14. High-Impact Closing CTA (Obsidian & Brushed Gold) */}
         <FinalCTA onOpenBooking={scrollToBooking} />
       </main>
 

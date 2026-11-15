@@ -37,7 +37,7 @@ export const DemoModal: React.FC<DemoModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         <p className="text-sm text-muted-foreground leading-relaxed mb-6 font-normal">
-          Aura Barbershop is an editorial front-end prototype crafted to demonstrate precision UI/UX layout, GSAP ScrollTrigger motion orchestration, Lenis smooth scrolling, and bespoke cutout composition.
+          Moda Barbershop is an editorial front-end prototype crafted to demonstrate precision UI/UX layout, GSAP ScrollTrigger motion orchestration, Lenis smooth scrolling, and bespoke cutout composition.
         </p>
 
         <div className="space-y-4 text-xs sm:text-sm text-muted-foreground divide-y divide-border/60 mb-6">
