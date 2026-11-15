@@ -101,8 +101,8 @@ export function App() {
     scrollToBooking();
   };
 
-  // Header should only appear once the hero sequence reaches the end-zone (0.90+)
-  const isHeaderVisible = reducedMotion || heroProgress >= 0.90;
+  // Header should only appear once the hero sequence reaches the end-zone (0.88+)
+  const isHeaderVisible = reducedMotion || heroProgress >= 0.88;
 
   return (
     <div className={`min-h-screen bg-background text-foreground ${reducedMotion ? 'reduced-motion' : ''}`}>
