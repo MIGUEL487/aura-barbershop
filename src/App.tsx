@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -39,6 +39,8 @@ export function App() {
     isConfirmed: false,
   });
 
+  const lenisRef = useRef<Lenis | null>(null);
+
   // Lenis Smooth Scroll Setup with GSAP Ticker synchronization
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -58,6 +60,7 @@ export function App() {
       touchMultiplier: 1.2,
     });
 
+    lenisRef.current = lenis;
     lenis.on('scroll', ScrollTrigger.update);
 
     const updateLenis = (time: number) => {
@@ -75,13 +78,18 @@ export function App() {
       clearTimeout(timeout);
       gsap.ticker.remove(updateLenis);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, [reducedMotion]);
 
   const scrollToBooking = () => {
-    const el = document.getElementById('booking');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo('#booking', { offset: -40, duration: 1.2 });
+    } else {
+      const el = document.getElementById('booking');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 

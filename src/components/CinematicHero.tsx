@@ -5,7 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Prevent mobile URL bar expand/collapse resizes from causing pin jumps
+// Prevent mobile dynamic toolbar resizes from resetting or breaking pin positions
 ScrollTrigger.config({ ignoreMobileResize: true });
 
 const TOTAL_FRAMES = 133;
@@ -187,7 +187,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       loadSingleImage(i);
     }
 
-    // 3. Progressively load remaining frames in small batches
+    // 3. Progressively load remaining frames in small non-blocking batches
     const loadRemaining = async () => {
       const batchSize = 6;
       for (let i = 26; i < TOTAL_FRAMES; i += batchSize) {
@@ -229,14 +229,14 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     };
   }, [scheduleRender]);
 
-  // GSAP ScrollTrigger Sequence Setup
+  // GSAP ScrollTrigger Sequence Setup: single timeline owner of the pin
   useGSAP(
     () => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       if (prefersReducedMotion) {
         scheduleRender(TOTAL_FRAMES - 1);
-        if (overlayRef.current) overlayRef.current.style.opacity = '1';
+        if (overlayRef.current) overlayRef.current.style.opacity = '0.2';
         if (brandRevealRef.current) {
           brandRevealRef.current.style.opacity = '1';
           brandRevealRef.current.style.transform = 'translateY(0px) scale(1)';
@@ -248,16 +248,16 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
       const st = ScrollTrigger.create({
         trigger: containerRef.current,
         start: 'top top',
-        end: isMobile ? '+=360%' : '+=440%',
+        end: isMobile ? '+=320%' : '+=400%',
         pin: true,
         anticipatePin: 1,
-        scrub: 0.8,
+        scrub: 0.7,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const progress = self.progress;
 
           // Header appearance threshold - only notify when crossing the boundary
-          const isComplete = progress >= 1.0;
+          const isComplete = progress >= 0.98;
           if (isComplete !== isCompletedRef.current) {
             isCompletedRef.current = isComplete;
             if (onHeroComplete) {
@@ -265,9 +265,9 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
             }
           }
 
-          // Phase 1: Frame sequence playback (progress 0.00 -> 0.70)
-          if (progress <= 0.70) {
-            const frameRatio = progress / 0.70;
+          // Phase 1: Frame sequence playback (progress 0.00 -> 0.65)
+          if (progress <= 0.65) {
+            const frameRatio = progress / 0.65;
             const targetFrame = Math.min(TOTAL_FRAMES - 1, Math.floor(frameRatio * TOTAL_FRAMES));
             scheduleRender(targetFrame);
 
@@ -277,32 +277,51 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
             }
             if (brandRevealRef.current) {
               brandRevealRef.current.style.opacity = '0';
-              brandRevealRef.current.style.transform = 'translateY(25px) scale(0.96)';
+              brandRevealRef.current.style.transform = 'translateY(24px) scale(0.97)';
             }
-          } else {
-            // Keep final frame (132) firmly held on canvas
+          }
+          // Phase 2: Smooth light dimming (max 0.22 opacity) & MODA entrance (progress 0.65 -> 0.78)
+          else if (progress <= 0.78) {
             scheduleRender(TOTAL_FRAMES - 1);
 
-            // Phase 2: Smooth darkening espresso overlay (progress 0.70 -> 0.82)
-            const fadeProgress = Math.min(1, Math.max(0, (progress - 0.70) / 0.12));
+            const enterProgress = (progress - 0.65) / 0.13;
+            // Pole remains clearly visible through light dimming (max 0.22)
             if (overlayRef.current) {
-              overlayRef.current.style.opacity = String(fadeProgress);
+              overlayRef.current.style.opacity = String(enterProgress * 0.22);
             }
+            if (brandRevealRef.current) {
+              brandRevealRef.current.style.opacity = String(enterProgress);
+              const yOffset = (1 - enterProgress) * 24;
+              const scale = 0.97 + enterProgress * 0.03;
+              brandRevealRef.current.style.transform = `translateY(${yOffset}px) scale(${scale})`;
+            }
+          }
+          // Phase 3: Appreciable Hold stage (progress 0.78 -> 0.88)
+          else if (progress <= 0.88) {
+            scheduleRender(TOTAL_FRAMES - 1);
 
-            // Phase 3 & 4: Majestic MODA title reveal & hold buffer (progress 0.76 -> 1.00)
-            if (progress >= 0.76) {
-              const titleProgress = Math.min(1, Math.max(0, (progress - 0.76) / 0.14));
-              if (brandRevealRef.current) {
-                brandRevealRef.current.style.opacity = String(titleProgress);
-                const yOffset = (1 - titleProgress) * 25;
-                const scale = 0.96 + titleProgress * 0.04;
-                brandRevealRef.current.style.transform = `translateY(${yOffset}px) scale(${scale})`;
-              }
-            } else {
-              if (brandRevealRef.current) {
-                brandRevealRef.current.style.opacity = '0';
-                brandRevealRef.current.style.transform = 'translateY(25px) scale(0.96)';
-              }
+            if (overlayRef.current) {
+              overlayRef.current.style.opacity = '0.22';
+            }
+            if (brandRevealRef.current) {
+              brandRevealRef.current.style.opacity = '1';
+              brandRevealRef.current.style.transform = 'translateY(0px) scale(1)';
+            }
+          }
+          // Phase 4: Smooth animated exit of MODA before unpinning (progress 0.88 -> 1.00)
+          else {
+            scheduleRender(TOTAL_FRAMES - 1);
+
+            const exitProgress = (progress - 0.88) / 0.12;
+            if (overlayRef.current) {
+              overlayRef.current.style.opacity = String((1 - exitProgress) * 0.22);
+            }
+            if (brandRevealRef.current) {
+              const exitOpacity = Math.max(0, 1 - exitProgress);
+              brandRevealRef.current.style.opacity = String(exitOpacity);
+              const yOffset = -exitProgress * 20;
+              const scale = 1 - exitProgress * 0.03;
+              brandRevealRef.current.style.transform = `translateY(${yOffset}px) scale(${scale})`;
             }
           }
         },
@@ -333,20 +352,23 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         aria-label="Moda Barbershop cinematic rotating pole sequence"
       />
 
-      {/* Smooth Darkening Charcoal & Espresso Transition Overlay */}
+      {/* Light Dimming Overlay (Max 0.22 opacity so the barber pole is always visible behind MODA) */}
       <div
         ref={overlayRef}
-        className="absolute inset-0 bg-[#0E0D0B] opacity-0 pointer-events-none z-10"
+        className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/20 opacity-0 pointer-events-none z-10 transition-none"
         style={{ willChange: 'opacity' }}
       />
 
-      {/* Cinematic Brand Reveal — ONLY the majestic MODA title */}
+      {/* Cinematic Brand Reveal — ONLY the balanced, editorial MODA title */}
       <div
         ref={brandRevealRef}
         className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none opacity-0"
         style={{ willChange: 'opacity, transform' }}
       >
-        <h1 className="font-serif text-7xl sm:text-9xl md:text-[11rem] lg:text-[13rem] font-bold tracking-[0.25em] uppercase text-[#F5F2EB] drop-shadow-[0_12px_45px_rgba(0,0,0,0.85)] select-none m-0 pl-[0.25em]">
+        <h1
+          className="font-serif font-bold uppercase tracking-[0.25em] pl-[0.25em] text-[#141210] select-none m-0 text-center drop-shadow-[0_2px_18px_rgba(255,255,255,0.7)]"
+          style={{ fontSize: 'clamp(3.5rem, 8.5vw, 7.5rem)' }}
+        >
           MODA
         </h1>
       </div>
