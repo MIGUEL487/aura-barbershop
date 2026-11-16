@@ -42,7 +42,6 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
   const currentRenderedIndexRef = useRef<number>(-1);
   const requestedFrameRef = useRef<number>(0);
   const rafIdRef = useRef<number | null>(null);
-  const isCompletedRef = useRef<boolean>(false);
 
   // Helper to format frame path
   const getFramePath = useCallback((idx: number, mobile: boolean) => {
@@ -156,7 +155,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     [renderFrame]
   );
 
-  // Non-blocking prioritized preloading with off-thread image decoding
+  // High-performance prioritized preloading
   useEffect(() => {
     let isCancelled = false;
     const targetCache = isMobile ? mobileImagesRef.current : desktopImagesRef.current;
@@ -170,7 +169,13 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         const img = new Image();
         img.src = getFramePath(idx, isMobile);
         img.onload = () => {
-          if (!isCancelled) targetCache[idx] = img;
+          if (!isCancelled) {
+            targetCache[idx] = img;
+            // If user is currently looking at this frame or adjacent, immediately paint
+            if (Math.abs(requestedFrameRef.current - idx) <= 1) {
+              scheduleRender(requestedFrameRef.current);
+            }
+          }
           resolve(img);
         };
         img.onerror = () => resolve(img);
@@ -183,41 +188,40 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     // 1. Immediately load frame 0 and render
     loadSingleImage(0).then(() => {
       if (!isCancelled) {
-        scheduleRender(currentRenderedIndexRef.current >= 0 ? currentRenderedIndexRef.current : 0);
+        renderFrame(0);
       }
     });
 
-    // 2. Eagerly preload initial batch (frames 1–25)
-    for (let i = 1; i <= 25; i++) {
-      loadSingleImage(i);
+    // 2. Rapidly preload keyframes across the sequence (every 5th frame)
+    // Ensures immediate continuous scrub even if user scrolls instantaneously
+    for (let i = 0; i < TOTAL_FRAMES; i += 5) {
+      if (!targetCache[i]) {
+        loadSingleImage(i);
+      }
     }
 
-    // 3. Progressively load remaining frames in small non-blocking batches
-    const loadRemaining = async () => {
-      const batchSize = 6;
-      for (let i = 26; i < TOTAL_FRAMES; i += batchSize) {
+    // 3. Eagerly preload all remaining frames
+    const loadRemaining = () => {
+      for (let i = 1; i < TOTAL_FRAMES; i++) {
         if (isCancelled) break;
-        await new Promise((r) => setTimeout(r, 25));
-
-        const batchPromises: Promise<HTMLImageElement>[] = [];
-        for (let j = i; j < Math.min(i + batchSize, TOTAL_FRAMES); j++) {
-          batchPromises.push(loadSingleImage(j));
+        if (!targetCache[i]) {
+          loadSingleImage(i);
         }
-        await Promise.all(batchPromises);
       }
     };
 
-    const timeout = setTimeout(loadRemaining, 100);
+    // Dispatch load queue on next microtask
+    const timer = setTimeout(loadRemaining, 30);
 
     return () => {
       isCancelled = true;
-      clearTimeout(timeout);
+      clearTimeout(timer);
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = null;
       }
     };
-  }, [isMobile, getFramePath, scheduleRender]);
+  }, [isMobile, getFramePath, scheduleRender, renderFrame]);
 
   // Window resize & orientation redrawing
   useEffect(() => {
@@ -234,7 +238,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     };
   }, [scheduleRender]);
 
-  // GSAP ScrollTrigger Sequence Setup: single timeline owner of the pin
+  // GSAP ScrollTrigger Sequence Setup: single deterministic timeline owner of the pin
   useGSAP(
     () => {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -253,107 +257,89 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         return;
       }
 
-      const st = ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: 'top top',
-        end: isMobile ? '+=180%' : '+=220%',
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1,
-        scrub: 0.5,
-        invalidateOnRefresh: false,
-        onUpdate: (self) => {
-          const progress = self.progress;
+      const frameObj = { frame: 0 };
 
-          // Header appearance threshold - only notify when crossing the boundary
-          const isComplete = progress >= 0.85;
-          if (isComplete !== isCompletedRef.current) {
-            isCompletedRef.current = isComplete;
-            if (onHeroCompleteRef.current) {
-              onHeroCompleteRef.current(isComplete);
-            }
-          }
-
-          // Complete ghost-pole prevention: when scroll has progressed beyond the hero pin spacer,
-          // ensure the container is hidden so no background or canvas ever bleeds into lower sections.
-          // Instantly restored when scrolling back up.
-          if (containerRef.current) {
-            if (progress >= 1.0) {
-              containerRef.current.style.visibility = 'hidden';
-            } else if (containerRef.current.style.visibility === 'hidden') {
-              containerRef.current.style.visibility = 'visible';
-            }
-          }
-
-          // Phase 1: Frame sequence playback (progress 0.00 -> 0.70)
-          if (progress <= 0.70) {
-            const frameRatio = progress / 0.70;
-            const targetFrame = Math.min(TOTAL_FRAMES - 1, Math.floor(frameRatio * TOTAL_FRAMES));
-            scheduleRender(targetFrame);
-
-            // Overlay & brand remain hidden during pole rotation
-            if (overlayRef.current) {
-              overlayRef.current.style.opacity = '0';
-              overlayRef.current.style.backgroundColor = '#000000';
-            }
-            if (brandRevealRef.current) {
-              brandRevealRef.current.style.opacity = '0';
-              brandRevealRef.current.style.transform = 'translateY(20px) scale(0.98)';
-            }
-          }
-          // Phase 2: Smooth light dimming (max 0.22 opacity) & MODA entrance (progress 0.70 -> 0.82)
-          else if (progress <= 0.82) {
-            scheduleRender(TOTAL_FRAMES - 1);
-
-            const enterProgress = (progress - 0.70) / 0.12;
-            // Pole remains clearly visible through light dimming (max 0.22)
-            if (overlayRef.current) {
-              overlayRef.current.style.opacity = String(enterProgress * 0.22);
-              overlayRef.current.style.backgroundColor = '#000000';
-            }
-            if (brandRevealRef.current) {
-              brandRevealRef.current.style.opacity = String(enterProgress);
-              const yOffset = (1 - enterProgress) * 20;
-              const scale = 0.98 + enterProgress * 0.02;
-              brandRevealRef.current.style.transform = `translateY(${yOffset}px) scale(${scale})`;
-            }
-          }
-          // Phase 3: Appreciable Hold stage (progress 0.82 -> 0.90)
-          else if (progress <= 0.90) {
-            scheduleRender(TOTAL_FRAMES - 1);
-
-            if (overlayRef.current) {
-              overlayRef.current.style.opacity = '0.22';
-              overlayRef.current.style.backgroundColor = '#000000';
-            }
-            if (brandRevealRef.current) {
-              brandRevealRef.current.style.opacity = '1';
-              brandRevealRef.current.style.transform = 'translateY(0px) scale(1)';
-            }
-          }
-          // Phase 4: Smooth animated exit of MODA and seamless transition to dark theme (progress 0.90 -> 1.00)
-          else {
-            scheduleRender(TOTAL_FRAMES - 1);
-
-            const exitProgress = (progress - 0.90) / 0.10;
-            if (brandRevealRef.current) {
-              const exitOpacity = Math.max(0, 1 - exitProgress * 1.2);
-              brandRevealRef.current.style.opacity = String(exitOpacity);
-              const yOffset = -exitProgress * 16;
-              const scale = 1 - exitProgress * 0.02;
-              brandRevealRef.current.style.transform = `translateY(${yOffset}px) scale(${scale})`;
-            }
-            if (overlayRef.current) {
-              // Seamlessly transition from subtle 0.22 tint to solid #0E0D0B background of the rest of the site
-              overlayRef.current.style.backgroundColor = '#0E0D0B';
-              overlayRef.current.style.opacity = String(0.22 + exitProgress * 0.78);
-            }
-          }
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top top',
+          end: isMobile ? '+=300%' : '+=380%',
+          pin: true,
+          pinSpacing: true,
+          anticipatePin: 1,
+          scrub: 0.8,
+          invalidateOnRefresh: false,
         },
       });
 
+      // Phase 1 (0.0s -> 7.2s): Smooth scroll-controlled frame-by-frame scrub
+      tl.to(
+        frameObj,
+        {
+          frame: TOTAL_FRAMES - 1,
+          ease: 'none',
+          duration: 7.2,
+          onUpdate: () => {
+            const targetFrame = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(frameObj.frame)));
+            scheduleRender(targetFrame);
+          },
+        },
+        0
+      );
+
+      // Phase 2 (7.2s -> 8.6s): Subtle dark overlay (max 0.22 tint, pole remains clearly visible!) & ivory MODA entrance
+      tl.to(
+        overlayRef.current,
+        {
+          opacity: 0.22,
+          backgroundColor: '#000000',
+          ease: 'power1.out',
+          duration: 1.4,
+        },
+        7.2
+      );
+
+      tl.to(
+        brandRevealRef.current,
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          ease: 'power2.out',
+          duration: 1.4,
+        },
+        7.2
+      );
+
+      // Phase 3 (8.6s -> 9.2s): Hold stage - MODA title is held and appreciated over the subtly dimmed pole
+      // (implicit hold of 0.6s)
+
+      // Phase 4 (9.2s -> 10.0s): Smooth animated exit of MODA and seamless transition to dark theme
+      tl.to(
+        brandRevealRef.current,
+        {
+          opacity: 0,
+          y: -16,
+          scale: 0.98,
+          ease: 'power1.in',
+          duration: 0.8,
+        },
+        9.2
+      );
+
+      tl.to(
+        overlayRef.current,
+        {
+          backgroundColor: '#0E0D0B',
+          opacity: 1,
+          ease: 'power1.inOut',
+          duration: 0.8,
+        },
+        9.2
+      );
+
       return () => {
-        st.kill();
+        tl.kill();
         if (rafIdRef.current !== null) {
           cancelAnimationFrame(rafIdRef.current);
           rafIdRef.current = null;

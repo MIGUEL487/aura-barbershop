@@ -6,7 +6,7 @@ interface HeaderProps {
   isVisible?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenBooking, isVisible = true }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenBooking, isVisible = false }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -30,8 +30,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking, isVisible = true 
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-out transform ${
         isVisible
-          ? 'opacity-100 translate-y-0 pointer-events-auto'
-          : 'opacity-0 -translate-y-full pointer-events-none'
+          ? 'opacity-100 translate-y-0 pointer-events-auto visible'
+          : 'opacity-0 -translate-y-full pointer-events-none invisible'
       } ${
         isScrolled
           ? 'bg-[#0E0D0B]/92 backdrop-blur-md border-b border-border shadow-2xl py-3.5'

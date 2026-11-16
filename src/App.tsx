@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -30,10 +30,6 @@ export function App() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
 
-  const handleHeroComplete = useCallback((completed: boolean) => {
-    setIsHeaderVisible(completed);
-  }, []);
-
   const [bookingState, setBookingState] = useState<BookingState>({
     step: 1,
     serviceId: null,
@@ -53,7 +49,6 @@ export function App() {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (mediaQuery.matches) {
       setReducedMotion(true);
-      setIsHeaderVisible(true);
     }
 
     if (reducedMotion) {
@@ -85,6 +80,26 @@ export function App() {
       (window as any).lenis = null;
     };
   }, [reducedMotion]);
+
+  // Dedicated Header ScrollTrigger: Header is ONLY visible when the user has scrolled PAST the hero and its pin spacer
+  useEffect(() => {
+    const headerST = ScrollTrigger.create({
+      trigger: '#hero-sentinel',
+      start: 'top top+=60',
+      end: 'max',
+      refreshPriority: -1,
+      onEnter: () => setIsHeaderVisible(true),
+      onLeaveBack: () => setIsHeaderVisible(false),
+      onRefresh: (self) => {
+        const isPast = Boolean(self.start > 0 && window.scrollY >= self.start);
+        setIsHeaderVisible(isPast);
+      },
+    });
+
+    return () => {
+      headerST.kill();
+    };
+  }, []);
 
   const scrollToBooking = () => {
     if (lenisRef.current) {
@@ -120,15 +135,15 @@ export function App() {
       {/* 1. Header is invisible during the initial cinematic hero, and only slides in when hero completes */}
       <Header
         onOpenBooking={scrollToBooking}
-        isVisible={reducedMotion || isHeaderVisible}
+        isVisible={isHeaderVisible}
       />
 
       <main>
         {/* 2. Cinematic Scroll-Driven Frame-by-Frame Hero (Only the pole and majestic MODA reveal) */}
-        <CinematicHero
-          onOpenBooking={scrollToBooking}
-          onHeroComplete={handleHeroComplete}
-        />
+        <CinematicHero onOpenBooking={scrollToBooking} />
+
+        {/* Dedicated Sentinel: sits in normal document flow immediately after the hero pin spacer */}
+        <div id="hero-sentinel" className="w-full h-px pointer-events-none" />
 
         {/* 3. Top Infinite Marquee (Craft Track) */}
         <Marquee variant="craft" />
