@@ -22,6 +22,11 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const brandRevealRef = useRef<HTMLDivElement>(null);
+  const onHeroCompleteRef = useRef(onHeroComplete);
+
+  useEffect(() => {
+    onHeroCompleteRef.current = onHeroComplete;
+  }, [onHeroComplete]);
 
   // Synchronously initialize device mode to strictly isolate mobile vs desktop sets
   const [isMobile, setIsMobile] = useState<boolean>(() => {
@@ -236,92 +241,112 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
 
       if (prefersReducedMotion) {
         scheduleRender(TOTAL_FRAMES - 1);
-        if (overlayRef.current) overlayRef.current.style.opacity = '0.2';
+        if (overlayRef.current) {
+          overlayRef.current.style.opacity = '0.22';
+          overlayRef.current.style.backgroundColor = '#000000';
+        }
         if (brandRevealRef.current) {
           brandRevealRef.current.style.opacity = '1';
           brandRevealRef.current.style.transform = 'translateY(0px) scale(1)';
         }
-        if (onHeroComplete) onHeroComplete(true);
+        if (onHeroCompleteRef.current) onHeroCompleteRef.current(true);
         return;
       }
 
       const st = ScrollTrigger.create({
         trigger: containerRef.current,
         start: 'top top',
-        end: isMobile ? '+=320%' : '+=400%',
+        end: isMobile ? '+=180%' : '+=220%',
         pin: true,
+        pinSpacing: true,
         anticipatePin: 1,
-        scrub: 0.7,
-        invalidateOnRefresh: true,
+        scrub: 0.5,
+        invalidateOnRefresh: false,
         onUpdate: (self) => {
           const progress = self.progress;
 
           // Header appearance threshold - only notify when crossing the boundary
-          const isComplete = progress >= 0.98;
+          const isComplete = progress >= 0.85;
           if (isComplete !== isCompletedRef.current) {
             isCompletedRef.current = isComplete;
-            if (onHeroComplete) {
-              onHeroComplete(isComplete);
+            if (onHeroCompleteRef.current) {
+              onHeroCompleteRef.current(isComplete);
             }
           }
 
-          // Phase 1: Frame sequence playback (progress 0.00 -> 0.65)
-          if (progress <= 0.65) {
-            const frameRatio = progress / 0.65;
+          // Complete ghost-pole prevention: when scroll has progressed beyond the hero pin spacer,
+          // ensure the container is hidden so no background or canvas ever bleeds into lower sections.
+          // Instantly restored when scrolling back up.
+          if (containerRef.current) {
+            if (progress >= 1.0) {
+              containerRef.current.style.visibility = 'hidden';
+            } else if (containerRef.current.style.visibility === 'hidden') {
+              containerRef.current.style.visibility = 'visible';
+            }
+          }
+
+          // Phase 1: Frame sequence playback (progress 0.00 -> 0.70)
+          if (progress <= 0.70) {
+            const frameRatio = progress / 0.70;
             const targetFrame = Math.min(TOTAL_FRAMES - 1, Math.floor(frameRatio * TOTAL_FRAMES));
             scheduleRender(targetFrame);
 
             // Overlay & brand remain hidden during pole rotation
             if (overlayRef.current) {
               overlayRef.current.style.opacity = '0';
+              overlayRef.current.style.backgroundColor = '#000000';
             }
             if (brandRevealRef.current) {
               brandRevealRef.current.style.opacity = '0';
-              brandRevealRef.current.style.transform = 'translateY(24px) scale(0.97)';
+              brandRevealRef.current.style.transform = 'translateY(20px) scale(0.98)';
             }
           }
-          // Phase 2: Smooth light dimming (max 0.22 opacity) & MODA entrance (progress 0.65 -> 0.78)
-          else if (progress <= 0.78) {
+          // Phase 2: Smooth light dimming (max 0.22 opacity) & MODA entrance (progress 0.70 -> 0.82)
+          else if (progress <= 0.82) {
             scheduleRender(TOTAL_FRAMES - 1);
 
-            const enterProgress = (progress - 0.65) / 0.13;
+            const enterProgress = (progress - 0.70) / 0.12;
             // Pole remains clearly visible through light dimming (max 0.22)
             if (overlayRef.current) {
               overlayRef.current.style.opacity = String(enterProgress * 0.22);
+              overlayRef.current.style.backgroundColor = '#000000';
             }
             if (brandRevealRef.current) {
               brandRevealRef.current.style.opacity = String(enterProgress);
-              const yOffset = (1 - enterProgress) * 24;
-              const scale = 0.97 + enterProgress * 0.03;
+              const yOffset = (1 - enterProgress) * 20;
+              const scale = 0.98 + enterProgress * 0.02;
               brandRevealRef.current.style.transform = `translateY(${yOffset}px) scale(${scale})`;
             }
           }
-          // Phase 3: Appreciable Hold stage (progress 0.78 -> 0.88)
-          else if (progress <= 0.88) {
+          // Phase 3: Appreciable Hold stage (progress 0.82 -> 0.90)
+          else if (progress <= 0.90) {
             scheduleRender(TOTAL_FRAMES - 1);
 
             if (overlayRef.current) {
               overlayRef.current.style.opacity = '0.22';
+              overlayRef.current.style.backgroundColor = '#000000';
             }
             if (brandRevealRef.current) {
               brandRevealRef.current.style.opacity = '1';
               brandRevealRef.current.style.transform = 'translateY(0px) scale(1)';
             }
           }
-          // Phase 4: Smooth animated exit of MODA before unpinning (progress 0.88 -> 1.00)
+          // Phase 4: Smooth animated exit of MODA and seamless transition to dark theme (progress 0.90 -> 1.00)
           else {
             scheduleRender(TOTAL_FRAMES - 1);
 
-            const exitProgress = (progress - 0.88) / 0.12;
-            if (overlayRef.current) {
-              overlayRef.current.style.opacity = String((1 - exitProgress) * 0.22);
-            }
+            const exitProgress = (progress - 0.90) / 0.10;
             if (brandRevealRef.current) {
-              const exitOpacity = Math.max(0, 1 - exitProgress);
+              const exitOpacity = Math.max(0, 1 - exitProgress * 1.2);
               brandRevealRef.current.style.opacity = String(exitOpacity);
-              const yOffset = -exitProgress * 20;
-              const scale = 1 - exitProgress * 0.03;
+              const yOffset = -exitProgress * 16;
+              const scale = 1 - exitProgress * 0.02;
               brandRevealRef.current.style.transform = `translateY(${yOffset}px) scale(${scale})`;
+            }
+            if (overlayRef.current) {
+              // Seamlessly transition from subtle 0.22 tint to solid #0E0D0B background of the rest of the site
+              overlayRef.current.style.backgroundColor = '#0E0D0B';
+              overlayRef.current.style.opacity = String(0.22 + exitProgress * 0.78);
             }
           }
         },
@@ -335,7 +360,7 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         }
       };
     },
-    { dependencies: [isMobile, scheduleRender, onHeroComplete], scope: containerRef }
+    { dependencies: [isMobile], scope: containerRef }
   );
 
   return (
@@ -352,22 +377,22 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         aria-label="Moda Barbershop cinematic rotating pole sequence"
       />
 
-      {/* Light Dimming Overlay (Max 0.22 opacity so the barber pole is always visible behind MODA) */}
+      {/* Light Dimming Overlay (Max 0.22 opacity so the barber pole is always visible behind MODA, transitions to #0E0D0B on unpin) */}
       <div
         ref={overlayRef}
-        className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/20 opacity-0 pointer-events-none z-10 transition-none"
-        style={{ willChange: 'opacity' }}
+        className="absolute inset-0 bg-black opacity-0 pointer-events-none z-10 transition-none"
+        style={{ willChange: 'opacity, background-color' }}
       />
 
-      {/* Cinematic Brand Reveal — ONLY the balanced, editorial MODA title */}
+      {/* Cinematic Brand Reveal — ONLY the balanced, editorial MODA title in high-contrast ivory */}
       <div
         ref={brandRevealRef}
         className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none opacity-0"
         style={{ willChange: 'opacity, transform' }}
       >
         <h1
-          className="font-serif font-bold uppercase tracking-[0.25em] pl-[0.25em] text-[#141210] select-none m-0 text-center drop-shadow-[0_2px_18px_rgba(255,255,255,0.7)]"
-          style={{ fontSize: 'clamp(3.5rem, 8.5vw, 7.5rem)' }}
+          className="font-serif font-bold uppercase tracking-[0.25em] pl-[0.25em] text-[#F5F2EB] select-none m-0 text-center drop-shadow-[0_2px_24px_rgba(197,160,89,0.35)]"
+          style={{ fontSize: 'clamp(2.75rem, 7vw, 6rem)' }}
         >
           MODA
         </h1>

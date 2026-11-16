@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -21,11 +21,18 @@ import { BookingState } from './types';
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
+if (typeof window !== 'undefined') {
+  (window as any).ScrollTrigger = ScrollTrigger;
+}
 
 export function App() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
+
+  const handleHeroComplete = useCallback((completed: boolean) => {
+    setIsHeaderVisible(completed);
+  }, []);
 
   const [bookingState, setBookingState] = useState<BookingState>({
     step: 1,
@@ -61,6 +68,7 @@ export function App() {
     });
 
     lenisRef.current = lenis;
+    (window as any).lenis = lenis;
     lenis.on('scroll', ScrollTrigger.update);
 
     const updateLenis = (time: number) => {
@@ -70,15 +78,11 @@ export function App() {
     gsap.ticker.add(updateLenis);
     gsap.ticker.lagSmoothing(0);
 
-    const timeout = setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 400);
-
     return () => {
-      clearTimeout(timeout);
       gsap.ticker.remove(updateLenis);
       lenis.destroy();
       lenisRef.current = null;
+      (window as any).lenis = null;
     };
   }, [reducedMotion]);
 
@@ -123,7 +127,7 @@ export function App() {
         {/* 2. Cinematic Scroll-Driven Frame-by-Frame Hero (Only the pole and majestic MODA reveal) */}
         <CinematicHero
           onOpenBooking={scrollToBooking}
-          onHeroComplete={(complete) => setIsHeaderVisible(complete)}
+          onHeroComplete={handleHeroComplete}
         />
 
         {/* 3. Top Infinite Marquee (Craft Track) */}
