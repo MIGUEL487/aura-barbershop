@@ -1,22 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 import { Menu, X, Scissors, Calendar } from 'lucide-react';
 
 interface HeaderProps {
   onOpenBooking: () => void;
   isVisible?: boolean;
+  reducedMotion: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenBooking, isVisible = false }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
+export const Header: React.FC<HeaderProps> = ({ onOpenBooking, isVisible = false, reducedMotion }) => {
+  const headerRef = useRef<HTMLElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  useGSAP(() => {
+    const header = headerRef.current!;
+    header.inert = !isVisible;
+    gsap.to(header, {
+      autoAlpha: isVisible ? 1 : 0,
+      yPercent: isVisible ? 0 : -100,
+      duration: reducedMotion ? 0 : 0.28,
+      ease: 'power2.out',
+      overwrite: true,
+    });
+  }, { scope: headerRef, dependencies: [isVisible, reducedMotion] });
 
   const navLinks = [
     { href: '#craft', label: 'The Craft' },
@@ -28,15 +35,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking, isVisible = false
 
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-out transform ${
-        isVisible
-          ? 'opacity-100 translate-y-0 pointer-events-auto visible'
-          : 'opacity-0 -translate-y-full pointer-events-none invisible'
-      } ${
-        isScrolled
-          ? 'bg-[#0E0D0B]/92 backdrop-blur-md border-b border-border shadow-2xl py-3.5'
-          : 'bg-[#0E0D0B]/80 backdrop-blur-sm border-b border-border/50 py-4'
-      }`}
+      ref={headerRef}
+      aria-hidden={!isVisible}
+      className={`invisible fixed inset-x-0 top-0 z-50 border-b border-border bg-[#0E0D0B]/90 py-3.5 opacity-0 shadow-2xl backdrop-blur-md ${isVisible ? '' : 'pointer-events-none'}`}
     >
       <div className="container-x flex items-center justify-between gap-4">
         {/* Brand Logo */}
@@ -94,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking, isVisible = false
       </div>
 
       {/* Mobile Dropdown Menu */}
-      {mobileMenuOpen && (
+      {isVisible && mobileMenuOpen && (
         <div className="lg:hidden border-t border-border mt-3 py-4 px-6 bg-[#13110E] flex flex-col gap-4">
           {navLinks.map((link) => (
             <a

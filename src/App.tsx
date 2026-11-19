@@ -26,7 +26,7 @@ if (typeof window !== 'undefined') {
 }
 
 export function App() {
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
 
@@ -46,11 +46,6 @@ export function App() {
 
   // Lenis Smooth Scroll Setup with GSAP Ticker synchronization
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mediaQuery.matches) {
-      setReducedMotion(true);
-    }
-
     if (reducedMotion) {
       return;
     }
@@ -58,7 +53,8 @@ export function App() {
     const lenis = new Lenis({
       duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
+      smoothWheel: false,
+      anchors: { offset: -70, immediate: true },
       touchMultiplier: 1.2,
     });
 
@@ -81,23 +77,57 @@ export function App() {
     };
   }, [reducedMotion]);
 
-  // Dedicated Header ScrollTrigger: Header is ONLY visible when the user has scrolled PAST the hero and its pin spacer
   useEffect(() => {
-    const headerST = ScrollTrigger.create({
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReducedMotion(media.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    const update = (trigger: ScrollTrigger) => setIsHeaderVisible(trigger.scroll() >= trigger.start);
+    const trigger = ScrollTrigger.create({
       trigger: '#hero-sentinel',
-      start: 'top top+=60',
+      start: 'top bottom-=1',
       end: 'max',
       refreshPriority: -1,
-      onEnter: () => setIsHeaderVisible(true),
-      onLeaveBack: () => setIsHeaderVisible(false),
-      onRefresh: (self) => {
-        const isPast = Boolean(self.start > 0 && window.scrollY >= self.start);
-        setIsHeaderVisible(isPast);
-      },
+      onUpdate: update,
+      onRefresh: update,
     });
-
+    const refresh = requestAnimationFrame(() => ScrollTrigger.refresh());
     return () => {
-      headerST.kill();
+      cancelAnimationFrame(refresh);
+      trigger.kill();
+    };
+  }, [reducedMotion]);
+
+  useEffect(() => {
+    const key = `moda:scroll:${location.pathname}${location.search}`;
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    let restoreFrame = 0;
+
+    try {
+      const saved = Number(sessionStorage.getItem(key));
+      if (navigation?.type === 'reload' && saved > 0) {
+        // Wait for GSAP to lay out the pins before restoring the document position.
+        restoreFrame = requestAnimationFrame(() => window.scrollTo({ top: saved, behavior: 'instant' }));
+      }
+    } catch {
+      // The browser may block session storage.
+    }
+
+    const savePosition = () => {
+      try {
+        sessionStorage.setItem(key, String(window.scrollY));
+      } catch {
+        // Native scroll restoration remains available.
+      }
+    };
+
+    window.addEventListener('pagehide', savePosition);
+    return () => {
+      cancelAnimationFrame(restoreFrame);
+      window.removeEventListener('pagehide', savePosition);
     };
   }, []);
 
@@ -107,7 +137,7 @@ export function App() {
     } else {
       const el = document.getElementById('booking');
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+        el.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth' });
       }
     }
   };
@@ -136,20 +166,21 @@ export function App() {
       <Header
         onOpenBooking={scrollToBooking}
         isVisible={isHeaderVisible}
+        reducedMotion={reducedMotion}
       />
 
-      <main>
+      <main id="top">
         {/* 2. Cinematic Scroll-Driven Frame-by-Frame Hero (Only the pole and majestic MODA reveal) */}
-        <CinematicHero onOpenBooking={scrollToBooking} />
+        <CinematicHero reducedMotion={reducedMotion} />
 
         {/* Dedicated Sentinel: sits in normal document flow immediately after the hero pin spacer */}
-        <div id="hero-sentinel" className="w-full h-px pointer-events-none" />
+        <div id="hero-sentinel" className="w-full h-0 pointer-events-none" />
 
         {/* 3. Top Infinite Marquee (Craft Track) */}
         <Marquee variant="craft" />
 
         {/* 4. Storytelling Ritual in 3 Chapters (Understand, Execute, Refine) */}
-        <Storytelling />
+        <Storytelling reducedMotion={reducedMotion} />
 
         {/* 5. Services Menu (3 Cards with Staggered Entrance) */}
         <Services onSelectService={handleSelectServiceFromCard} />

@@ -23,6 +23,7 @@
   }
   
   html {
+    overflow-anchor: none;
     color-scheme: dark;
     background-color: var(--background);
     color: var(--foreground);
@@ -244,4 +245,51 @@
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
+}
+
+@media (min-width: 1024px) and (min-height: 680px) {
+  .methodology-chapter {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  .methodology-image {
+    max-height: 39svh;
+  }
+
+  .methodology {
+    scroll-margin-top: 4.5rem;
+  }
+
+  .methodology[data-scroll-layout="horizontal"] {
+    display: flex;
+    align-items: center;
+    height: 100svh;
+    padding-block: 4.5rem 2rem;
+  }
+
+  .methodology[data-scroll-layout="horizontal"] .methodology-controls {
+    display: grid;
+  }
+
+  .methodology[data-scroll-layout="horizontal"] .methodology-viewport {
+    overflow: clip;
+  }
+
+  .methodology[data-scroll-layout="horizontal"] .methodology-track {
+    display: flex;
+    gap: 0;
+  }
+
+  .methodology[data-scroll-layout="horizontal"] .methodology-chapter {
+    flex: 0 0 100%;
+  }
+}
+
+.cinematic-hero:not([data-reveal-ready]):not([data-reduced-motion="true"]) .hero-reveal {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.pin-spacer:has(> .cinematic-hero) {
+  background-color: #E9E8E4;
 }
