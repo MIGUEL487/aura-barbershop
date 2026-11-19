@@ -13,4 +13,9 @@ routes.js
 styles.css
 index.js
 extracted_kit/
+moda_barbershop_hero/
+qa/
+deploy_code.txt
+*.jpg
+!public/**
 
