@@ -15,6 +15,9 @@ const BACKGROUND = '#E9E8E4';
 const CACHE_SIZE = 18;
 const CONCURRENT_LOADS = 5;
 const FRAME_ROOT = '/moda_barbershop_hero';
+const FINAL_FRAME_JPEG = `${FRAME_ROOT}/frames_original/frame_0068.jpg`;
+// The preview packs the desktop sequence in reading order, one tile per frame.
+const PREVIEW = { columns: 10, width: 256, height: 144 };
 
 function frameUrl(index: number) {
   return `${FRAME_ROOT}/frames_desktop/frame_${String(index + 1).padStart(4, '0')}.webp`;
@@ -35,49 +38,70 @@ export function CinematicHero({ reducedMotion }: { reducedMotion: boolean }) {
     delete canvas.dataset.frame;
     delete section.dataset.revealReady;
     const context = canvas.getContext('2d', { alpha: false });
-    if (!context) {
-      section.dataset.revealReady = 'true';
-      return;
-    }
+    if (!context) return;
 
     const cache = new Map<number, HTMLImageElement>();
     const pending = new Map<number, () => void>();
     const failed = new Set<number>();
+    const preview = new Image();
     let raf = 0;
-    let lastImage: HTMLImageElement | undefined;
+    let displayed: { image: HTMLImageElement; index: number } | undefined;
     let direction = 1;
+
+    function selectFrame() {
+      const requested = target.current;
+      const exact = cache.get(requested);
+      if (exact) return { image: exact, index: requested };
+
+      if (preview.naturalWidth) {
+        return { image: preview, index: Math.min(requested, FINAL_FRAME - 1) };
+      }
+
+      const candidates = [...cache.keys()].filter(index => index !== FINAL_FRAME);
+      const index = candidates.reduce<number | undefined>((nearest, candidate) => (
+        nearest === undefined || Math.abs(candidate - requested) < Math.abs(nearest - requested)
+          ? candidate : nearest
+      ), undefined);
+      return index === undefined ? displayed : { image: cache.get(index)!, index };
+    }
 
     function draw() {
       raf = 0;
       if (!context) return;
-      const candidates = [...cache.keys()].filter(index => index !== FINAL_FRAME || target.current >= FINAL_FRAME - 3);
-      const index = candidates.reduce<number | undefined>((nearest, candidate) => (
-        nearest === undefined || Math.abs(candidate - target.current) < Math.abs(nearest - target.current)
-          ? candidate : nearest
-      ), undefined);
-      const image = index === undefined ? lastImage : cache.get(index);
-      if (!image) return;
+      const frame = selectFrame();
+      if (!frame) return;
+      const { image, index } = frame;
+      const canReveal = index === FINAL_FRAME && target.current === FINAL_FRAME;
 
       const dpr = Math.min(devicePixelRatio || 1, 1.5);
       const width = Math.round(canvas.clientWidth * dpr);
       const height = Math.round(canvas.clientHeight * dpr);
       if (!width || !height) return;
-      if (image === lastImage && canvas.width === width && canvas.height === height) return;
+      if (image === displayed?.image && index === displayed.index && canvas.width === width && canvas.height === height) {
+        section.toggleAttribute('data-reveal-ready', canReveal);
+        return;
+      }
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
       }
-      const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
-      const frameWidth = image.naturalWidth * scale;
-      const frameHeight = image.naturalHeight * scale;
+      const usePreview = image === preview;
+      const sourceWidth = usePreview ? PREVIEW.width : image.naturalWidth;
+      const sourceHeight = usePreview ? PREVIEW.height : image.naturalHeight;
+      const sourceX = usePreview ? (index % PREVIEW.columns) * sourceWidth : 0;
+      const sourceY = usePreview ? Math.floor(index / PREVIEW.columns) * sourceHeight : 0;
+      const scale = Math.min(width / sourceWidth, height / sourceHeight);
+      const frameWidth = sourceWidth * scale;
+      const frameHeight = sourceHeight * scale;
 
       context.fillStyle = BACKGROUND;
       context.fillRect(0, 0, width, height);
-      context.drawImage(image, (width - frameWidth) / 2, (height - frameHeight) / 2, frameWidth, frameHeight);
-      canvas.dataset.frame = index === undefined ? '' : String(index + 1);
+      context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight,
+        (width - frameWidth) / 2, (height - frameHeight) / 2, frameWidth, frameHeight);
+      canvas.dataset.frame = String(index + 1);
       canvas.style.visibility = 'visible';
-      lastImage = image;
-      if (index === FINAL_FRAME) section.dataset.revealReady = 'true';
+      displayed = frame;
+      section.toggleAttribute('data-reveal-ready', canReveal);
     }
 
     function queueDraw() {
@@ -95,7 +119,7 @@ export function CinematicHero({ reducedMotion }: { reducedMotion: boolean }) {
       }
     }
 
-    function load(index: number) {
+    function load(index: number, url = frameUrl(index)) {
       const image = new Image();
       image.decoding = 'async';
       const cleanup = () => {
@@ -115,9 +139,12 @@ export function CinematicHero({ reducedMotion }: { reducedMotion: boolean }) {
           }
           queueDraw();
         } else {
-          failed.add(index);
-          if (index === FINAL_FRAME) section.dataset.revealReady = 'true';
           image.removeAttribute('src');
+          if (index === FINAL_FRAME && url !== FINAL_FRAME_JPEG) {
+            load(index, FINAL_FRAME_JPEG);
+            return;
+          }
+          failed.add(index);
         }
         fillQueue();
       };
@@ -128,23 +155,31 @@ export function CinematicHero({ reducedMotion }: { reducedMotion: boolean }) {
       });
       image.onload = () => finish(true);
       image.onerror = () => finish(false);
-      image.src = frameUrl(index);
+      image.src = url;
     }
 
     requestFrame.current = index => {
       if (index !== target.current) direction = Math.sign(index - target.current);
       target.current = index;
+      if (index !== FINAL_FRAME) delete section.dataset.revealReady;
       fillQueue();
       queueDraw();
     };
 
     const resize = new ResizeObserver(queueDraw);
     resize.observe(canvas);
+    if (!reducedMotion) {
+      preview.onload = queueDraw;
+      preview.fetchPriority = 'high';
+      preview.src = `${FRAME_ROOT}/frames_preview.webp`;
+    }
     fillQueue();
 
     return () => {
       requestFrame.current = () => {};
       resize.disconnect();
+      preview.onload = null;
+      preview.removeAttribute('src');
       pending.forEach(cancel => cancel());
       cancelAnimationFrame(raf);
     };
@@ -153,8 +188,8 @@ export function CinematicHero({ reducedMotion }: { reducedMotion: boolean }) {
   useGSAP(() => {
     const scene = { frame: 0 };
     const section = sectionRef.current!;
+    target.current = reducedMotion ? FINAL_FRAME : 0;
     if (reducedMotion) {
-      target.current = 0;
       gsap.set(titleRef.current, { autoAlpha: 1, y: 0 });
       return;
     }
@@ -205,7 +240,7 @@ export function CinematicHero({ reducedMotion }: { reducedMotion: boolean }) {
   }, { scope: sectionRef, dependencies: [reducedMotion], revertOnUpdate: true });
 
   return (
-    <section id="hero" ref={sectionRef} data-reduced-motion={reducedMotion}
+    <section id="hero" ref={sectionRef}
       className="cinematic-hero relative h-[100svh] w-full select-none" style={{ backgroundColor: BACKGROUND }}>
       <img
         src={`${FRAME_ROOT}/frames_original/frame_0001.jpg`}

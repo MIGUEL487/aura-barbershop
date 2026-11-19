@@ -285,9 +285,8 @@
   }
 }
 
-.cinematic-hero:not([data-reveal-ready]):not([data-reduced-motion="true"]) .hero-reveal {
-  visibility: hidden;
-  opacity: 0;
+.cinematic-hero:not([data-reveal-ready]) .hero-reveal {
+  display: none;
 }
 
 .pin-spacer:has(> .cinematic-hero) {

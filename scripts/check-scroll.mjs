@@ -93,15 +93,17 @@ try {
       }));
     }
 
-    for (const [progress, expected] of [[0.25, 43], [0.75, 128], [0.92, 133], [0.25, 43]]) {
+    for (const [progress, expected] of [[0.25, 43], [0.75, 128], [0.79, 133], [0.92, 133], [0.75, 128], [0.25, 43]]) {
       await seek(page, hero.end * progress);
       await waitForFrame(page, expected);
       assert.ok(Math.abs((await page.locator('#hero').boundingBox()).y) <= 1);
       await headerState(page, false);
-      assert.equal(await title.isVisible(), progress === 0.92);
       if (progress === 0.92) {
+        await title.waitFor({ state: 'visible' });
         const opacity = await page.locator('#hero h1').evaluate(el => Number(getComputedStyle(el.parentElement).opacity));
         assert.equal(opacity, 1);
+      } else {
+        assert.equal(await title.isVisible(), false);
       }
       await capture(page, label + '-hero-' + progress);
     }
@@ -183,7 +185,8 @@ try {
 
   const reduced = await browser.newPage({ viewport: { width: 1366, height: 768 }, reducedMotion: 'reduce' });
   await reduced.goto(url);
-  await waitForFrame(reduced, 1);
+  await waitForFrame(reduced, 133);
+  await reduced.locator('#hero h1').waitFor({ state: 'visible' });
   assert.deepEqual(await pins(reduced), []);
   await headerState(reduced, false);
   await seek(reduced, 800);
@@ -191,16 +194,79 @@ try {
   await capture(reduced, 'reduced-motion');
   await reduced.close();
 
+  const slow = await browser.newPage({ viewport: { width: 1366, height: 768 } });
+  await slow.route('**/frames_desktop/*.webp', async route => {
+    await new Promise(resolve => setTimeout(resolve, 650));
+    await route.continue();
+  });
+  await slow.goto(url, { waitUntil: 'domcontentloaded' });
+  await waitForFrame(slow, 1);
+  const [slowHero] = await pins(slow);
+  await slow.mouse.move(640, 380);
+  for (const pixels of [81, -81]) {
+    for (let step = 0; step < 12; step++) {
+      const current = await slow.evaluate(() => scrollY);
+      await slow.mouse.wheel(0, pixels);
+      await slow.waitForFunction(position => scrollY === position, current + pixels);
+      const progress = (current + pixels - slowHero.start) / (slowHero.end - slowHero.start);
+      const expected = Math.round(progress * 132 / 0.78) + 1;
+      await slow.waitForFunction(
+        frame => Number(document.querySelector('#hero canvas').dataset.frame) === frame,
+        expected,
+        { timeout: 400 },
+      );
+    }
+  }
+  await slow.close();
+
+  for (const failWebp of [false, true]) {
+    const page = await browser.newPage();
+    const [delayed, label] = failWebp
+      ? ['**/frames_original/frame_0068.jpg', 'JPEG fallback']
+      : ['**/frames_desktop/frame_0133.webp', 'WebP'];
+    const requestStarted = Promise.withResolvers();
+    const releaseFrame = Promise.withResolvers();
+    if (failWebp) await page.route('**/frames_desktop/frame_0133.webp', route => route.abort());
+    await page.route(delayed, async route => {
+      requestStarted.resolve();
+      await releaseFrame.promise;
+      await route.continue();
+    });
+
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded' });
+      await waitForFrame(page, 1);
+      await requestStarted.promise;
+      const [hero] = await pins(page);
+      await seek(page, hero.end * 0.92);
+      await waitForFrame(page, 132);
+      assert.equal(await page.locator('#hero h1').isVisible(), false, `${label}: title preceded the final frame`);
+      releaseFrame.resolve();
+      await waitForFrame(page, 133);
+      await page.locator('#hero h1').waitFor({ state: 'visible' });
+    } finally {
+      releaseFrame.resolve();
+      await page.close();
+    }
+  }
+
   const fallback = await browser.newPage();
   await fallback.route('**/frames_desktop/*.webp', route => route.abort());
+  await fallback.route('**/frames_preview.webp', route => route.abort());
+  await fallback.route('**/frames_original/frame_0068.jpg', route => route.abort());
+  const missingFinal = fallback.waitForEvent('requestfailed', request => request.url().endsWith('/frame_0068.jpg'));
   await fallback.goto(url);
+  await missingFinal;
   assert.ok(await fallback.locator('#hero img').evaluate(img => img.complete && img.naturalWidth > 0));
   assert.equal(await fallback.locator('#hero canvas').isVisible(), false);
   const [hero] = await pins(fallback);
+  await seek(fallback, hero.end * 0.92);
+  await fallback.waitForFunction(() => window.ScrollTrigger.getAll().find(trigger => trigger.pin?.id === 'hero').progress >= 0.91);
+  assert.equal(await fallback.locator('#hero h1').isVisible(), false);
   await seek(fallback, hero.end + 12);
   await headerState(fallback, true);
   await fallback.close();
-  console.log('Reduced motion and unavailable WebP frames passed');
+  console.log('Reduced motion, continuous wheel input with delayed images, delayed final frame, JPEG fallback and missing sequence passed');
 } finally {
   await browser.close();
 }
